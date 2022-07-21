@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "A simple command-line tool for Windows managing small script snippets.",
   "main": "build/main/index.js",
+  "bin": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
   "repository": "https://github.com/CKylinMC/cmand",
   "license": "MIT",
   "keywords": [],
   "scripts": {
+    "premakepack": "npm run build",
+    "makepack": "pkg package.json",
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
@@ -37,15 +40,31 @@
     "reset-hard": "git clean -dfx && git reset --hard && npm i",
     "prepare-release": "run-s reset-hard test cov:check doc:html version doc:publish"
   },
+  "pkg": {
+    "scripts": "build/main/**/*.js",
+    "targets": ["win"],
+    "outputPath": "dist"
+  },
   "engines": {
     "node": ">=10"
   },
   "dependencies": {
-    "@bitauth/libauth": "^1.17.1"
+    "@bitauth/libauth": "^1.17.1",
+    "@pnpm/os.env.path-extender": "^0.2.4",
+    "@pnpm/os.env.path-extender-windows": "^0.2.1",
+    "@types/inquirer": "^8.2.1",
+    "chalk": "^4.1.2",
+    "commander": "^9.4.0",
+    "homedir": "^0.6.0",
+    "inquirer": "^8.0.0",
+    "lokijs": "^1.5.12",
+    "pkg": "^5.8.0",
+    "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@types/lokijs": "^1.5.7",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "ava": "^3.12.1",

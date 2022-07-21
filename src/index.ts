@@ -1,3 +1,4 @@
-export * from './lib/async';
-export * from './lib/hash';
-export * from './lib/number';
+import { init } from './actions/init';
+import App from './entry';
+
+init().then(App);
