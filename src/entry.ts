@@ -9,7 +9,6 @@ import { run } from './actions/run';
 import { search } from './actions/search';
 import { setprop } from './actions/setprop';
 import { Info } from './info';
-import Db from './lib/Db';
 
 export default function App() {
     const p = new Command();
@@ -75,10 +74,12 @@ export default function App() {
         .aliases(['s'])
         .description('change script settings')
         .argument('<name>', 'name of the script')
+        .option('--description <description>', 'set description')
+        .option('--name <name>', 'set name')
         .option('--enabled', 'enable script')
         .option('--no-enabled', 'disable script')
-        .option('--reqadmin', 'require admin privilege to run')
-        .option('--no-reqadmin', "don't require admin privilege to run")
+        .option('--req-admin', 'require admin privilege to run')
+        .option('--no-req-admin', "don't require admin privilege to run")
         .action((name, options) => setprop(name, options));
 
     p.command('run')
@@ -95,6 +96,4 @@ export default function App() {
 
     p.parse(process.argv);
     
-    Db.db.save();
-    Db.db.close();
 }

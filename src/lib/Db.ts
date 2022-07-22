@@ -1,4 +1,4 @@
-import loki from 'lokijs';
+import Datastore from 'nestdb';
 import { dbpath } from '../info';
 
 export interface Script{
@@ -12,70 +12,54 @@ export interface Script{
 
 // create instance for database only when call, so it will be created after init()
 class Db{
-    static _db: loki;
+    static _db: Datastore;
     static get db() {
         if (!Db._db) {
-            Db._db = new loki(dbpath, {
-                autosave: true,
-                autoload:true
-            });
-            Db._db.loadDatabase({});
+            Db._db = new Datastore({ filename: dbpath });
+            Db._db.loadDatabase();
         }
         return Db._db;
     }
-    static _scripts: loki.Collection;
-    static get scripts() {
-        if (!Db._scripts) {
-            if (!Db.db.getCollection('scripts')) {
-                Db.db.addCollection('scripts')
-            }
-            Db._scripts = Db.db.getCollection('scripts');
-        }
-        return Db._scripts;
-    }
 
-    static addScript(script: Script) {
-        Db.scripts.insert(script);
-        Db._db.saveDatabase();
+    static async addScript(script: Script) {
+        await Db.db.insert(script);
     }
-    static updateScript(name, changes) {
-        Db.scripts.findAndUpdate({ name }, ()=>changes);
-        Db._db.saveDatabase();
+    static async updateScript(name, changes) {
+        await Db.db.update({ name }, {$set: changes});
     }
-    static removeScriptByName(name) {
-        Db.scripts.removeWhere({ name });
-        Db._db.saveDatabase();
+    static async removeScriptByName(name) {
+        await Db.db.remove({ name });
     }
-    static listScripts(enabledOnly = false) {
+    static listScripts(enabledOnly = false):Promise<any[]> {
         if (enabledOnly) {
-            return Db.scripts.find({ enabled: true });
+            return new Promise((r,j)=>Db.db.find({ enabled: true }, (err, docs) => err?j(err):r(docs)));
         }
-        return Db.scripts.find();
+        return new Promise((r,j)=>Db.db.find({}, (err, docs) => err?j(err):r(docs)));
     }
-    static searchScripts(nameOrDescriptionOrPath: string) {
-        return Db.scripts.find({
+    static searchScripts(nameOrDescriptionOrPath: string):Promise<any> {
+        return new Promise((r,j)=>Db.db.find({
             $or: [
                 { name: { $regex: nameOrDescriptionOrPath } },
                 { description: { $regex: nameOrDescriptionOrPath } },
                 { path: { $regex: nameOrDescriptionOrPath } }
             ]
-        });
+        }, (err, docs) => err?j(err):r(docs)));
     }
-    static getScriptByPath(path) {
-        return Db.scripts.findOne({ path });
+    static getScriptByPath(path):Promise<any> {
+        return new Promise((r,j)=>Db.db.findOne({ path }, (err, docs) => err?j(err):r(docs)));
     }
-    static getScriptByName(name) {
-        return Db.scripts.findOne({ name });
+    static getScriptByName(name):Promise<any> {
+        return new Promise((r,j)=>Db.db.findOne({ name }, (err, docs) => err?j(err):r(docs)));
     }
-    static getScriptByNameOrAlias(name) {
+    static getScriptByNameOrAlias(name):Promise<any> {
         //enabled only
-        return Db.scripts.findOne({
+        return new Promise((r,j)=>Db.db.findOne({
             $or: [
                 { name },
                 { aliases: { $in: [name] } }
             ],
             enabled: true
-        });
+        }, (err, docs) => err?j(err):r(docs)));
         //return Db.scripts.findOne({ $or: [{ name }, { aliases: { $contains: name } }] });
     }
 }

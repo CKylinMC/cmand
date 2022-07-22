@@ -19,11 +19,11 @@ export async function remove(name, yes = false) {
         console.log(chalk.red(`${script.path} is not a file.`));
         return;
     }
-    const doRemove = () => {
+    const doRemove = async () => {
         //remove the file
         fs.unlinkSync(script.path);
         //remove from db
-        Db.removeScriptByName(script.name);
+        await Db.removeScriptByName(script.name);
         console.log(chalk.green(`Script ${name} removed.`));
     };
     if (yes) doRemove();
@@ -37,9 +37,9 @@ export async function remove(name, yes = false) {
                     default: false,
                 },
             ])
-            .then((answers) => {
+            .then(async (answers) => {
                 if (answers.confirm) {
-                    doRemove();
+                    await doRemove();
                 }
             });
 }

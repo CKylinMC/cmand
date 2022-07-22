@@ -19,13 +19,14 @@ export async function setprop(name,props) {
         return;
     }
     // get all prop from props which in interface Script
-    const propList = Object.keys(script);
+    const propList = Object.keys(props);
+    const availabledProps = Object.keys(script);
     const obj: unknown | Script = {};
     for (const prop of propList) {
-        if (props.includes(prop)) {
+        if (availabledProps.includes(prop)) {
             obj[prop] = props[prop];
         }
     }
     // update the db
-    Db.updateScript(name, obj);
+    await Db.updateScript(name, obj);
 }

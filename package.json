@@ -42,7 +42,9 @@
   },
   "pkg": {
     "scripts": "build/main/**/*.js",
-    "targets": ["win"],
+    "targets": [
+      "win"
+    ],
     "outputPath": "dist"
   },
   "engines": {
@@ -57,14 +59,13 @@
     "commander": "^9.4.0",
     "homedir": "^0.6.0",
     "inquirer": "^8.0.0",
-    "lokijs": "^1.5.12",
+    "nestdb": "^2.0.0",
     "pkg": "^5.8.0",
     "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@types/lokijs": "^1.5.7",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "ava": "^3.12.1",

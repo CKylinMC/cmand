@@ -20,12 +20,12 @@ export async function add(scriptpath='', name=null, description='',reqAdmin=fals
     const filename = path.basename(scriptpath, path.extname(scriptpath));
     const callname = name??filename;
     // check if script already exists by name
-    if (Db.getScriptByName(filename)) {
+    if (await Db.getScriptByName(filename)) {
         console.log(chalk.red(`Script ${filename} already exists.`));
         return;
     }
     // check if script already exists by path
-    if (Db.getScriptByPath(scriptpath)) {
+    if (await Db.getScriptByPath(scriptpath)) {
         console.log(chalk.red(`Script ${scriptpath} already exists.`));
         return;
     }
@@ -33,7 +33,7 @@ export async function add(scriptpath='', name=null, description='',reqAdmin=fals
     const newpath = path.join(home, 'scripts', `${filename}${path.extname(scriptpath)}`);
     fs.copyFileSync(scriptpath, newpath);
     // add to db
-    Db.addScript({
+    await Db.addScript({
         name: callname,
         description,
         aliases: [filename, `${filename}${path.extname(scriptpath)}`],
