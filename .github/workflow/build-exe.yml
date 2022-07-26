@@ -1,0 +1,16 @@
+name: Build Executable
+on: [push]
+jobs:
+  Build-Executable:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm install 
+      - run: npm run makepack
+      - uses: actions/upload-artifact@v3
+        with:
+          name: windows-x64
+          path: dist/*.exe
