@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { addDirToEnvPath } from '@pnpm/os.env.path-extender';
-import { home } from '../info';
+import { home, scripthome } from '../info';
 
 export function init() {
     // create dir if not existed
