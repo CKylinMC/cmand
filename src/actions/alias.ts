@@ -21,6 +21,8 @@ export async function alias(name = '', commands) {
         path.extname(name)
     );
     const scriptpath = path.join(home, 'scripts', name);
+    // remove first two items
+    commands.splice(0, 2);
     fs.writeFileSync(scriptpath, (path.extname(name)=='cmd'?'@':'')+commands.join(' ')+(path.extname(name)=='cmd'?'%*':''));
     // add to db
     await Db.addScript({
