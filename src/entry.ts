@@ -45,11 +45,12 @@ export default function App() {
         );
 
     p.command('create')
+        .argument('[name]', 'name of script', null)
         .aliases(['new', 'c'])
         .description(
             'Create a new script. Script will be created in cmand home folder'
         )
-        .action(() => create());
+        .action((name) => create(name));
 
     p.command('modify')
         .aliases(['edit', 'open', 'm'])
