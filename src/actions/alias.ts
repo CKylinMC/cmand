@@ -5,7 +5,11 @@ import { home } from '../info';
 import Db from '../lib/Db';
 
 export async function alias(name = '', commands) {
-    if (name.length === 0 || !await Db.getScriptByName(name)) {
+    if (name.length === 0) {
+        console.log(chalk.red('Alias name can NOT be empty.'));
+        return;
+    }
+    if (await Db.getScriptByName(name)) {
         console.log(chalk.red('This name is already existed in your scripts.'));
         return;
     }
