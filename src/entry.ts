@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { add } from './actions/add';
+import { alias } from './actions/alias';
 import { create } from './actions/create';
 import { edit } from './actions/edit';
 import { info } from './actions/info';
@@ -51,6 +52,13 @@ export default function App() {
             'Create a new script. Script will be created in cmand home folder'
         )
         .action((name) => create(name));
+
+    p.command('alias')
+        .argument('<alias>', 'alias of your commands, will be the name of the script')
+        .description(
+            'Create a alias script for your commands.'
+        )
+        .action((name) => alias(name, p.args));
 
     p.command('modify')
         .aliases(['edit', 'open', 'm'])
