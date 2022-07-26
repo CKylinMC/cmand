@@ -11,7 +11,7 @@ export function init() {
     if (!fs.existsSync(path.join(home, 'scripts'))) {
         fs.mkdirSync(path.join(home, 'scripts'));
     }
-    return addDirToEnvPath(home, {
+    return addDirToEnvPath(scripthome, {
         position: 'start',
         proxyVarName: 'CMAND_SCRIPTS',
         overwrite: true,
