@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { add } from './actions/add';
 import { alias } from './actions/alias';
+import { cat } from './actions/cat';
 import { create } from './actions/create';
 import { edit } from './actions/edit';
 import { info } from './actions/info';
@@ -16,7 +17,7 @@ export default function App() {
     p.name(Info.name).version(Info.version).description(Info.description);
 
     p.command('ls')
-        .aliases(['list', 'all', 'l'])
+        .aliases(['list', 'all', 'l', 'scripts'])
         .description('List all scripts you have added')
         .option('-e,--enabled', 'display enabled scripts only')
         .action((options) => listAll(options.enabled));
@@ -55,16 +56,24 @@ export default function App() {
 
     p.command('alias')
         .argument('<alias>', 'alias of your commands, will be the name of the script')
+        .option('-h,--runathere', 'always run this script in current directory')
         .description(
             'Create a alias script for your commands.'
         )
-        .action((name) => alias(name, p.args));
+        .action((name,{runathere}) => alias(name, runathere, p.args));
 
     p.command('modify')
         .aliases(['edit', 'open', 'm'])
         .description('Modify an existing script')
         .argument('<name>', 'name of the script')
         .action((name) => edit(name));
+
+    p.command('cat')
+        .aliases(['get', 'see', 'raw'])
+        .description('Get contents for a script')
+        .argument('<name>', 'name of the script')
+        .option('-n,--no-color', 'disable color output')
+        .action((name,{color}) => cat(name,color));
 
     p.command('remove')
         .aliases(['del', 'delete', 'd'])

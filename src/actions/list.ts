@@ -8,7 +8,7 @@ export async function listAll(enabledOnly=false) {
     } else {
         console.log('Scripts:');
         scripts.forEach(script => {
-            console.log(chalk[script.enabled ? 'green' : 'red'](script.reqAdmin?`*`:'',`${script.name}${script.description.length?' - '+script.description:''} (${script.path})`));
+            console.log(chalk[script.enabled ? 'green' : 'red'](script.reqAdmin?`*`:'',`${chalk.bold(script.name)}${script.description.length?chalk.magenta(' - '+script.description):''} (${chalk.gray(script.path)})`));
         });
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "cmand",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "A simple command-line tool for Windows managing small script snippets.",
   "main": "build/main/index.js",
   "bin": "build/main/index.js",
@@ -30,6 +30,7 @@
     "@pnpm/os.env.path-extender-windows": "^0.2.1",
     "@types/inquirer": "^8.2.1",
     "chalk": "^4.1.2",
+    "cli-highlight": "^2.1.11",
     "commander": "^9.4.0",
     "homedir": "^0.6.0",
     "inquirer": "^8.0.0",

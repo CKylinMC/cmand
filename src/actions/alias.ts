@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import { home } from '../info';
 import Db from '../lib/Db';
 
-export async function alias(name = '', commands) {
+export async function alias(name = '', runathere = false, commands) {
     if (name.length === 0) {
         console.log(chalk.red('Alias name can NOT be empty.'));
         return;
@@ -23,11 +23,21 @@ export async function alias(name = '', commands) {
     const scriptpath = path.join(home, 'scripts', name);
     // remove first two items
     commands.splice(0, 2);
-    fs.writeFileSync(scriptpath, (path.extname(name)=='cmd'?'@':'')+commands.join(' ')+(path.extname(name)=='cmd'?'%*':''));
+    if (runathere) {
+        const content = [
+            (path.extname(name) == '.cmd' ? '@echo off' : ''),
+            "set cmandaliasorgdir=%CD%",
+            `cd /d "${process.execPath}"`,
+            commands.join(' ')+(path.extname(name)=='.cmd'?'%*':'')
+        ].filter(i => i.length).join('\n');
+        fs.writeFileSync(scriptpath, content);
+    } else {
+        fs.writeFileSync(scriptpath, (path.extname(name)=='.cmd'?'@':'')+commands.join(' ')+(path.extname(name)=='.cmd'?'%*':''));
+    }
     // add to db
     await Db.addScript({
         name: nameWithoutExtension,
-        description: "Alias script",
+        description: `Alias script of '${commands.join(' ').substring(0,20)}...'`,
         aliases: [name],
         path: scriptpath,
         reqAdmin: false,
