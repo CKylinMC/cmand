@@ -1,14 +1,16 @@
 {
   "name": "cmand",
   "version": "0.0.2",
-  "description": "A simple command-line tool for Windows managing small script snippets.",
+  "description": "A simple command-line tool for Windows managing your small scripts.",
   "main": "build/main/index.js",
-  "bin": "build/main/index.js",
+  "bin": {
+    "cmand": "build/main/index.js"
+  },
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
   "repository": "https://github.com/CKylinMC/cmand",
   "license": "MIT",
-  "keywords": [],
+  "keywords": ["cli","windows","commands"],
   "scripts": {
     "premakepack": "npm run build",
     "makepack": "pkg package.json",
