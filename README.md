@@ -14,7 +14,7 @@ This tool built with Node.JS, so you can easily get it if you have NPM installed
 npm install -g cmand
 ```
 
-Or you can download the prebuilt version of this tool from [releases](releases/latest) page and put it in a folder which contained in your PATH environment variable, but it will be a little slow and big.
+Or you can download the prebuilt version of this tool from [Github actions](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml) artifacts and put it in a folder which contained in your PATH environment variable, but it will be a little slow and big.
 
 ## How to use
 
