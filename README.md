@@ -17,7 +17,7 @@ npm install -g cmand
 
 Or you can download the prebuilt version of this tool from [Github actions](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml) artifacts and put it in a folder which contained in your PATH environment variable, but it will be a little slow and big.
 -->
-Currently you can download the prebuilt version of this tool from [Github actions](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml) artifacts and put it in a folder which contained in your PATH environment variable. I preparing for push it to NPM registry.
+Currently you can download the prebuilt version of this tool from [Github actions](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml) artifacts and put it in a folder which contained in your PATH environment variable. I'm preparing to push it to NPM registry so that you could use npm install directly.
 
 ## How to use
 
