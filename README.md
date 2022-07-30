@@ -37,6 +37,8 @@ Commands:
   help [command]                               display help for command
 ```
 
+*// Detailed usage documents not ready yet* 
+
 
 ## License  
 
