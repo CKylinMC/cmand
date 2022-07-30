@@ -8,6 +8,7 @@ I usually write some simple batch scripts to do some simple but repeating work o
 
 ## Installation
 
+<!--
 This tool built with Node.JS, so you can easily get it if you have NPM installed on your system:
 
 ```
@@ -15,6 +16,8 @@ npm install -g cmand
 ```
 
 Or you can download the prebuilt version of this tool from [Github actions](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml) artifacts and put it in a folder which contained in your PATH environment variable, but it will be a little slow and big.
+-->
+Currently you can download the prebuilt version of this tool from [Github actions](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml) artifacts and put it in a folder which contained in your PATH environment variable. I preparing for push it to NPM registry.
 
 ## How to use
 
