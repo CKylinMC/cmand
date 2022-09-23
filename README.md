@@ -2,6 +2,8 @@
 
 A simple command-line tool for `Windows` managing small scripts. No creative idea or tech in it, just a simple command-line tool built on the top of serval giants.
 
+`[WIP]`
+
 ## Why I built this
 
 I usually write some simple batch scripts to do some simple but repeating work on Windows. After a long time period, I forgot what I was wrote and where I put theme in. After that, I created a folder named `CMD_PATH` and add it into PATH and put all scripts I could found which wrote by me into it. But it still hard to managing these files. So, I built this tool, just for managing my scripts and keeping them available in PATH so I could use them anywhere.
