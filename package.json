@@ -4,7 +4,7 @@
   "description": "A simple command-line tool for Windows managing your small scripts.",
   "main": "build/main/index.js",
   "bin": {
-    "cmand": "build/main/index.js"
+    "cmand": "dist/cmand.exe"
   },
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
@@ -17,8 +17,9 @@
   ],
   "scripts": {
     "premakepack": "npm run build",
-    "makepack": "pkg package.json",
-    "build": "tsc -p tsconfig.json"
+    "makepack": "pkg build\\main\\index.js -t win --out-path dist",
+    "build": "tsc -p tsconfig.json",
+    "postinstall": "tsc -p tsconfig.json&&pkg build\\main\\index.js -t win -o dist\\cmand.exe"
   },
   "pkg": {
     "scripts": "build/main/**/*.js",
