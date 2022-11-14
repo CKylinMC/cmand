@@ -44,6 +44,9 @@ Commands:
 
 *// Detailed usage documents not ready yet* 
 
+## Known Issues
+* Script run with admin permissions not working properly at this time.
+
 
 ## License  
 
