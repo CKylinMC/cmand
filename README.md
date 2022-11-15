@@ -1,5 +1,7 @@
 # cmand
 
+[![Build Executable](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml/badge.svg)](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml)
+
 A simple command-line tool for `Windows` managing small scripts. No creative idea or tech in it, just a simple command-line tool built on the top of serval giants.
 
 `[WIP]`
