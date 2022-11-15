@@ -42,7 +42,7 @@
     "commander": "^9.4.1",
     "homedir": "^0.6.0",
     "inquirer": "^8",
-    "nestdb": "^2.0.0",
+    "nestdb": "github:CKylinMC/nestdb",
     "pkg": "^5.8.0",
     "sudo-prompt": "^9.2.1"
   },
