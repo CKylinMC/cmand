@@ -44,8 +44,11 @@ Commands:
 
 *// Detailed usage documents not ready yet* 
 
-## Known Issues
-* Script run with admin permissions not working properly at this time.
+## Known issues
+* Run as admin not working yet.
+* If you want to remove cmand and dont want to leave any data in your disk, please remove `%USERPROFILE%\.cmand` folder manually.
+  * ⚠️**Notice: This will remove cmand database and all your scripts created with cmand. Backup them first if you want keep them.**
+  * And also you need to remove all cmand related path from your system environment variables, such as `%CMAND_SCRIPTS%`.
 
 
 ## License  
