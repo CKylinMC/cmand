@@ -20,14 +20,17 @@ export async function run(name, args, forceAdmin=false) {
         console.log(chalk.red(`${script.path} is not a file.`));
         return;
     }
-    if (script.reqAdmin||forceAdmin) executeAsAdmin(script.path, args);
-    else execute(script, args);
+    if (!Array.isArray(args)) args = [];
+    if (script.reqAdmin||forceAdmin) executeAsAdmin(script, args.slice(2));
+    else execute(script, args.slice(2));
 }
 
 export async function executeAsAdmin(script: Script, args) {
     const { path } = script;
     const cmd = `${path} ${args.join(' ')}`;
-    exec(cmd, {}, function (error, stdout, stderr) {
+    exec(cmd, {
+        name: "CMAND Script Manager",
+    }, function (error, stdout, stderr) {
         if (error) throw error;
         console.log(stdout);
         console.error(stderr);
