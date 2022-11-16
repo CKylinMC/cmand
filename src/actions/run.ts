@@ -51,6 +51,7 @@ export async function runLocalScripts(taskname, args, output=true):Promise<any> 
             }
             const scriptName = path.join(dir, 'script.cmd');
             fs.writeFileSync(scriptName, scripts[taskname].toString());
+            console.log(chalk.gray('> Task: ' + taskname));
             await execute({
                 name: taskname,
                 aliases: [],
