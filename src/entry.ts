@@ -2,12 +2,12 @@ import { Command } from 'commander';
 import { add } from './actions/add';
 import { alias } from './actions/alias';
 import { cat } from './actions/cat';
-import { create } from './actions/create';
+import { create, createTask } from './actions/create';
 import { edit } from './actions/edit';
 import { info } from './actions/info';
 import { listAll } from './actions/list';
 import { remove } from './actions/remove';
-import { run } from './actions/run';
+import { run, runLocalScripts } from './actions/run';
 import { search } from './actions/search';
 import { setprop } from './actions/setprop';
 import { Info } from './info';
@@ -106,6 +106,13 @@ export default function App() {
         .argument('<name>', 'name of the script')
         .action((name) => run(name, p.args));
 
+    p.command('task')
+        .aliases(['runtask', 't'])
+        .description('run task from cmand.yml in current directory')
+        .argument('<name>', 'name of the task')
+        .option('-a, --add', 'add new task')
+        .action((name,options) => options.add?createTask(name,p.args.slice(3).join(' ')):runLocalScripts(name, p.args.slice(2)));
+
     p.command('run-as-admin')
         .aliases(['adminrun', 'sudo', 'r'])
         .description('run an existing script as admin')
@@ -113,5 +120,4 @@ export default function App() {
         .action((name) => run(name, p.args, true));
 
     p.parse(process.argv);
-    
 }

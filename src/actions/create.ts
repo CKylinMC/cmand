@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import yaml from 'yaml';
 import { home } from '../info';
 import Db from '../lib/Db';
 
@@ -86,4 +87,15 @@ export async function create(name = null) {
                 console.log(chalk.green('Your script is done.'));
             });
         });
+}
+
+export async function createTask(taskname, contents) {
+    if (!fs.existsSync('./cmand.yml')) {
+        fs.writeFileSync('./cmand.yml', '');
+        console.log(chalk.yellow('cmand.yml not found, creating a new one.'));
+    }
+    const scripts = yaml.parse(fs.readFileSync('./cmand.yml', 'utf8')) || {};
+    scripts[taskname] = contents;
+    fs.writeFileSync('./cmand.yml', yaml.stringify(scripts));
+    console.log(chalk.green('Task added into cmand.yml, run "cmand task ' + taskname + '" to run it.'));
 }

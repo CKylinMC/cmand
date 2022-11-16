@@ -1,23 +1,14 @@
+import chalk from 'chalk';
 import fs from 'fs';
-import path from 'path';
-import { addDirToEnvPath } from '@pnpm/os.env.path-extender';
-import { home, scripthome } from '../info';
 
-export function init():Promise<any> {
-    // create dir if not existed
-    if (!fs.existsSync(home)) {
-        fs.mkdirSync(home);
+export async function initLocalScript(force = false) {
+    if (fs.existsSync('./cmand.yml')) {
+        if (!force) {
+            console.log(chalk.red('cmand.yml already exists.'));
+            return;
+        } else {
+            fs.unlinkSync('./cmand.yml');
+        }
     }
-    if (!fs.existsSync(path.join(home, 'scripts'))) {
-        fs.mkdirSync(path.join(home, 'scripts'));
-    }
-    const variables = process.env.PATH;
-    if(variables.indexOf("cmand")==-1)
-        return addDirToEnvPath(scripthome, {
-            position: 'start',
-            proxyVarName: 'CMAND_SCRIPTS',
-            overwrite: true,
-            configSectionName: 'cmand-scripts',
-        });
-    return Promise.resolve();
+    fs.writeFileSync('./cmand.yml', `start:|\n  echo Start!\nbuild:|\n  echo Build!\n`);
 }
