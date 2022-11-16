@@ -50,7 +50,7 @@ export async function runLocalScripts(taskname, args, output=true):Promise<any> 
                 return;
             }
             const scriptName = path.join(dir, 'script.cmd');
-            fs.writeFileSync(scriptName, scripts[taskname].toString());
+            fs.writeFileSync(scriptName, "@echo off\n"+scripts[taskname].toString());
             console.log(chalk.gray('> Task: ' + taskname));
             await execute({
                 name: taskname,
@@ -81,7 +81,7 @@ export async function executeAsAdmin(script: Script, args) {
         }
         console.log(stdout);
         console.error(stderr);
-        console.log(chalk.gray(`script executed in ${Math.floor((endtime - starttime)/100000)*100}ms.`));
+        console.log(chalk.gray(`script executed in ${Math.floor((endtime - starttime)*100)/100000}s.`));
     });
 }
 
@@ -98,6 +98,6 @@ export async function execute(script: Script, args) {
     });
     child.on('close', (code) => {
         const endtime = new Date().getTime();
-        console.log(chalk.gray(`script exited with code ${code} in ${Math.floor((endtime - starttime)/100000)*100}ms.`));
+        console.log(chalk.gray(`script exited with code ${code} in ${Math.floor((endtime - starttime)*100)/100000}s.`));
     });
 }
