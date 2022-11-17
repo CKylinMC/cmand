@@ -5,7 +5,7 @@ import { cat } from './actions/cat';
 import { create, createTask } from './actions/create';
 import { edit } from './actions/edit';
 import { info } from './actions/info';
-import { listAll } from './actions/list';
+import { listAll, listTasks } from './actions/list';
 import { remove } from './actions/remove';
 import { run, runLocalScripts } from './actions/run';
 import { search } from './actions/search';
@@ -109,9 +109,9 @@ export default function App() {
     p.command('task')
         .aliases(['runtask', 't'])
         .description('run task from cmand.yml in current directory')
-        .argument('<name>', 'name of the task')
+        .argument('[name]', 'name of the task')
         .option('-a, --add', 'add new task')
-        .action((name,options) => options.add?createTask(name,p.args.slice(3).join(' ')):runLocalScripts(name, p.args.slice(2)));
+        .action((name,options) => (name&&name!=undefined&&typeof(name)=='string'&&name.length)?(options.add?createTask(name,p.args.slice(3).join(' ')):runLocalScripts(name, p.args.slice(2))):listTasks());
 
     p.command('run-as-admin')
         .aliases(['adminrun', 'sudo', 'r'])
