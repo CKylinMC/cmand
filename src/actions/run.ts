@@ -9,7 +9,7 @@ import Db, { Script } from '../lib/Db';
 
 export async function run(name, args, forceAdmin = false) {
     
-    if (await runLocalScripts(name, args)) {
+    if (await runLocalScripts(name, args, false)) {
         return;// run local script
     }
 

@@ -100,6 +100,18 @@ export default function App() {
         .option('--no-req-admin', "don't require admin privilege to run")
         .action((name, options) => setprop(name, options));
 
+    p.command('enable')
+        .aliases(['on'])
+        .description('enable a script')
+        .argument('<name>', 'name of the script')
+        .action((name) => setprop(name, {enabled:true}));
+
+    p.command('disable')
+        .aliases(['off'])
+        .description('disable a script')
+        .argument('<name>', 'name of the script')
+        .action((name) => setprop(name, {enabled:false}));
+
     p.command('run')
         .aliases(['start', 'execute', 'e'])
         .description('run an existing script')
