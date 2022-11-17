@@ -113,7 +113,7 @@ export default function App() {
         .action((name) => setprop(name, {enabled:false}));
 
     p.command('run')
-        .aliases(['start', 'execute', 'e'])
+        .aliases(['start', 'execute', 'r'])
         .description('run an existing script')
         .argument('<name>', 'name of the script')
         .action((name) => run(name, p.args));
@@ -126,7 +126,7 @@ export default function App() {
         .action((name,options) => (name&&name!=undefined&&typeof(name)=='string'&&name.length)?(options.add?createTask(name,p.args.slice(3).join(' ')):runLocalScripts(name, p.args.slice(2))):listTasks());
 
     p.command('run-as-admin')
-        .aliases(['adminrun', 'sudo', 'r'])
+        .aliases(['adminrun', 'sudo', 'e'])
         .description('run an existing script as admin')
         .argument('<name>', 'name of the script')
         .action((name) => run(name, p.args, true));
