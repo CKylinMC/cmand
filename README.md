@@ -39,7 +39,10 @@ Commands:
   remove|del [options] <name>                  Remove an existing script
   info|get <name>                              Get information of an existing script
   set|s [options] <name>                       change script settings
+  enable|on <name>                             enable a script
+  disable|off <name>                           disable a script
   run|start <name>                             run an existing script
+  task|runtask [options] [name]                run task from cmand.yml in current directory
   run-as-admin|adminrun <name>                 run an existing script as admin
   help [command]                               display help for command
 ```
