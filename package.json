@@ -1,6 +1,6 @@
 {
   "name": "cmand",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": "CKylinMC",
   "description": "A simple command-line tool for Windows managing your small scripts.",
   "main": "build/main/index.js",
