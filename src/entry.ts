@@ -4,7 +4,9 @@ import { alias } from './actions/alias';
 import { cat } from './actions/cat';
 import { create, createTask } from './actions/create';
 import { edit } from './actions/edit';
+import { exportPackage } from './actions/export';
 import { info } from './actions/info';
+import { importPackage } from './actions/install';
 import { listAll, listTasks } from './actions/list';
 import { remove } from './actions/remove';
 import { run, runLocalScripts } from './actions/run';
@@ -130,6 +132,19 @@ export default function App() {
         .description('run an existing script as admin')
         .argument('<name>', 'name of the script')
         .action((name) => run(name, p.args, true));
+
+    p.command('export')
+        .aliases(['makepkg'])
+        .description('convert a script into cmdpkg')
+        .argument('<name>', 'name of the script')
+        .action((name) => exportPackage(name));
+
+    p.command('import')
+        .aliases(['install'])
+        .option('-y, --yes', 'confirm question')
+        .description('install a cmdpkg')
+        .argument('<path>', 'path to cmdpkg')
+        .action((path,options) => importPackage(path,options.yes));
 
     p.parse(process.argv);
 }

@@ -3,9 +3,9 @@ import homedir from 'homedir';
 
 export const Info = {
     name: 'cmand',
-    version: '0.3.0',
+    version: '0.4.0',
     description: 'A command line tool for managing your script snippets on Windows.',
-    author: 'CKylinMC'
+    author: 'CKylinMC',
 }
 export const userhome = homedir();
 export const home = path.join(userhome, '.cmand');
