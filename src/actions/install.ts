@@ -102,7 +102,7 @@ export async function importPackage(targetpath,y=false) {
         console.log(`${isOverride?'* ':'+ '}${chalk[isOverride?'yellow':'blue'](file.filename)} (${chalk.gray(file.description)})`);
     }
     if (metadata.beforeInstallBanner) {
-        console.log("========================[README]===========================");
+        console.log("==========================[README]==========================");
         console.log(metadata.beforeInstallBanner);
     }
     console.log("============================================================");
