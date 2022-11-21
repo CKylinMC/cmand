@@ -71,33 +71,40 @@ export async function executeAsAdmin(script: Script, args) {
     const { path } = script;
     const cmd = `${path} ${args.join(' ')}`;
     const starttime = new Date().getTime();
-    sudo(cmd, {
-        name: "CMAND Script Manager",
-    }, function (error, stdout, stderr) {
-        const endtime = new Date().getTime();
-        if (error) {
-            console.error(chalk.red('Error running script:'), error);
-            return;
-        }
-        console.log(stdout);
-        console.error(stderr);
-        console.log(chalk.gray(`script executed in ${Math.floor((endtime - starttime)*100)/100000}s.`));
-    });
+    return new Promise(r => {
+        sudo(cmd, {
+            name: "CMAND Script Manager",
+        }, function (error, stdout, stderr) {
+            const endtime = new Date().getTime();
+            if (error) {
+                console.error(chalk.red('Error running script:'), error);
+                r(error);
+                return;
+            }
+            console.log(stdout);
+            console.error(stderr);
+            console.log(chalk.gray(`script executed in ${Math.floor((endtime - starttime) * 100) / 100000}s.`));
+            r(0);
+        });
+    })
 }
 
 export async function execute(script: Script, args) {
     // execute script in current cd
     const { path } = script;
     const starttime = new Date().getTime();
-    const child = spawn(path, args);
-    child.stdout.on('data', (data) => {
-        console.log(data.toString());
-    });
-    child.stderr.on('data', (data) => {
-        console.error(data.toString());
-    });
-    child.on('close', (code) => {
-        const endtime = new Date().getTime();
-        console.log(chalk.gray(`script exited with code ${code} in ${Math.floor((endtime - starttime)*100)/100000}s.`));
-    });
+    return new Promise(r => {
+        const child = spawn(path, args);
+        child.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+        child.stderr.on('data', (data) => {
+            console.error(data.toString());
+        });
+        child.on('close', (code) => {
+            const endtime = new Date().getTime();
+            console.log(chalk.gray(`script exited with code ${code} in ${Math.floor((endtime - starttime) * 100) / 100000}s.`));
+            r(code);
+        });
+    })
 }
