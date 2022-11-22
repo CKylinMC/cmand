@@ -44,6 +44,7 @@
     "commander": "^9.4.1",
     "commonjs-ora": "^1.0.2",
     "crypto": "^1.0.1",
+    "got": "^11",
     "homedir": "^0.6.0",
     "i": "^0.3.7",
     "inquirer": "^8",

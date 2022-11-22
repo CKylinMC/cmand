@@ -2,24 +2,142 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import AdmZip from 'adm-zip';
-import { md5, exceptSync, except } from '../lib/utils';
+import { md5, exceptSync, except, randstr } from '../lib/utils';
 import md5File from 'md5-file';
 import inquirer from 'inquirer';
-import Db from '../lib/Db';
+import Db, { Settings } from '../lib/Db';
 import { home } from '../info';
 import os from 'os';
 import { execute } from './run';
+import got from 'got';
 
+export async function searchCloud(name, askdownload=false, download = false, output = true) {
+    const allowedRepofileVerion = [1];
+    const err = (...msg) => output&&console.log(...msg);
+    const log = (...msg) => console.log(...msg);
+    if (!(await Settings.get('allowRemoteInstall', true))) {
+        err(chalk.red('Remote install is disabled.'));
+        return [false,'',''];
+    }
+    const listurl = await Settings.get('repolist', '');
+    if(!listurl||listurl.length===0) {
+        log(chalk.red('No repo list url found.'));
+        return [false,'',''];
+    }
+    let list;
+    try {
+        list = await got(listurl).json();
+    } catch (e) {
+        log(chalk.red('Failed to get repo list.'));
+        return [false,'',''];
+    }
+    if (!list) {
+        log(chalk.red('Repolist file is invalid.'));
+        return [false,'',''];
+    }
+    if (!(('repofile' in list) && ('version' in list) && ('urlbase' in list) && ('reposource' in list) && ('pkgs' in list))) {
+        log(chalk.red('Repolist file is invalid.'));
+        return [false,'',''];
+    }
+    if (!allowedRepofileVerion.includes(list.version)) {
+        log(chalk.red('Repolist file version is not supported.'));
+        return [false,'',''];
+    }
+    const urlbase = list.urlbase.endsWith('/') ? list.urlbase : list.urlbase + '/';
+    const reposource = list.reposource;
+    const repo = list.repofile;
+    const pkgs = list.pkgs;
+    if ('banner' in list) {
+        log(`========================[BANNER]========================`)
+        log(list.banner);
+        log(`========================================================`)
+    }
+    log(chalk.gray(`Searching ${name} in ${repo}...`));
+    const pkg = pkgs.find(pkg => pkg.name === name);
+    if (!pkg) {
+        log(chalk.red(`Package ${name} not found.`));
+        return [true,'',''];
+    }
+    log(chalk.green(`Package ${name} found.`));
+    log(`=========================[INFO]=========================`)
+    log(`${chalk.gray('Name:')} ${pkg.name}`);
+    log(`${chalk.gray('Fullname:')} ${pkg.fullname}`);
+    log(`${chalk.gray('Description:')} ${pkg.description ?? ''}`);
+    log(`${chalk.gray('Size:')} ${pkg.size ?? ''}`);
+    log(`${chalk.gray('Author:')} ${pkg.author ?? ''}`);
+    log(`========================================================`)
+    if (askdownload) {
+        const { download } = await inquirer.prompt([{
+            type: 'confirm',
+            name: 'download',
+            message: 'Download?',
+            default: true
+        }]);
+        if (!download) {
+            return [true,'',''];
+        }
+    } else if (!download) {
+        return [true,'',''];
+    }
+    const temp = path.join(os.tmpdir(), "cmand-dl-run-" + randstr());
+    try {
+        exceptSync(() => fs.mkdirSync(temp));
+        const downloadUrl = `${urlbase}${reposource}/${pkg.path}`;
+        const filename = path.basename(pkg.path);
+        const filepath = path.join(temp, filename);
+        // console.log({downloadUrl,filepath});
+        log(chalk.gray(`Downloading ${pkg.name} from ${repo}...`));
+        await new Promise((r, j) => {
+            const stream = got.stream(downloadUrl);
+            stream.on('error', j);
+            const writer = fs.createWriteStream(filepath);
+            writer.on('error', j);
+            writer.on('finish', r);
+            stream.pipe(writer);
+        });
+        const md5sum = await md5File(filepath);
+        if (md5sum !== pkg.md5) {
+            log(chalk.red(`Downloaded file is corrupted.`));
+            throw new Error();
+        }
+        log(chalk.green(`Downloaded ${pkg.name} from ${repo}.`));
+        return [true, filepath, temp];
+    }catch(e) {
+        log(chalk.red(`Failed to download ${pkg.name}.`));
+        // console.log(e);
+        try {
+            exceptSync(() => fs.unlinkSync(temp));
+        } catch (e) { }
+        return [true,'',''];
+    }
+}
 
 export async function importPackage(targetpath,y=false) {
     const allowedPackageVersion = [1];
     let targetPath = targetpath;
+    let removeTemp = false;
+    let tempPath = '';
+    const removeTempFile = () => {
+        if (!removeTemp) return;
+        try {
+            exceptSync(() => fs.rmSync(tempPath, { recursive: true }));
+        } catch (e) { }
+    }
     if (!fs.existsSync(targetpath) || !fs.statSync(targetpath).isFile()) {
-        if (fs.existsSync(targetpath + '.cmdpkg') || fs.statSync(targetpath + '.cmdpkg').isFile()) {
+        if (fs.existsSync(targetpath + '.cmdpkg') && fs.statSync(targetpath + '.cmdpkg').isFile()) {
             targetPath = targetpath + '.cmdpkg';
         } else {
-            console.log(chalk.red(`Package ${targetpath} not found.`));
-            return;
+            const res = await searchCloud(targetPath, !y, y, false);
+            if (!res[0]) {
+                console.log(chalk.red(`Package ${targetpath} not found.`));
+                return;
+            }
+            if ((res[1] as string).length == 0) {
+                return;
+            }
+            tempPath = res[2] as string;
+            targetPath = res[1] as string;
+            removeTemp = true;
         }
     }
 
@@ -34,6 +152,7 @@ export async function importPackage(targetpath,y=false) {
 
     if (!fileList['metadata.json']) {
         console.log(chalk.red(`Package ${targetPath} is not a valid package.`));
+        removeTempFile();
         return;
     }
 
@@ -51,6 +170,7 @@ export async function importPackage(targetpath,y=false) {
 
     if (!metadata.name || !metadata.description || !metadata.author || !metadata.modified || !metadata.size || !metadata.type || !metadata.include || !metadata.scripts) {
         console.log(chalk.red(`Metadata of package ${targetPath} is invalid.`));
+        removeTempFile();
         return;
     }
 
@@ -59,15 +179,18 @@ export async function importPackage(targetpath,y=false) {
     for (let script of metadata.scripts) {
         if (!script.name || !script.filename || !script.description || !script.md5) {
             console.log(chalk.red(`Metadata of script ${script.filename} in package ${metadata.name} is invalid.`));
+            removeTempFile();
             return;
         }
         if (!fileList['scripts/' + script.filename]) {
             console.log(chalk.red(`Script ${script.filename} in package ${metadata.name} is not found.`));
+            removeTempFile();
             return;
         }
         const entry = fileList['scripts/' + script.filename];
         if (script.md5 != md5(zip.readAsText(entry))) {
             console.log(chalk.red(`Script ${script.name} in package ${metadata.name} is corrupted.`));
+            removeTempFile();
             return;
         }
         if(await Db.getScriptByName(script.name)){
@@ -79,10 +202,12 @@ export async function importPackage(targetpath,y=false) {
     for (let resource of metadata.include) {
         if (!resource.path || !resource.md5) {
             console.log(chalk.red(`Metadata of resource ${resource.path} in package ${metadata.name} is invalid.`));
+            removeTempFile();
             return;
         }
         if (!fileList['include/' + resource.path]) {
             console.log(chalk.red(`Resource ${resource.path} in package ${metadata.name} is not found.`));
+            removeTempFile();
             return;
         }
     }
@@ -117,6 +242,7 @@ export async function importPackage(targetpath,y=false) {
         ]);
         if (!answers.confirm) {
             console.log(chalk.yellow('Install cancelled.'));
+            removeTempFile();
             return;
         }
     }
@@ -186,9 +312,11 @@ export async function importPackage(targetpath,y=false) {
             }
         }
         console.log(chalk.green('\nInstall completed.'));
+        removeTempFile();
     } catch (e) {
         console.log(chalk.red(`\nFailed to install package ${metadata.name}.`));
         console.log(chalk.red(e));
+        removeTempFile();
         return;
     }
     /*

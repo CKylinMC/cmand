@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { add } from './actions/add';
 import { alias } from './actions/alias';
 import { cat } from './actions/cat';
+import { getConfig, listConfig, removeConfig, setConfig } from './actions/config';
 import { create, createTask } from './actions/create';
 import { edit } from './actions/edit';
 import { exportPackage } from './actions/export';
@@ -13,8 +14,10 @@ import { run, runLocalScripts } from './actions/run';
 import { search } from './actions/search';
 import { setprop } from './actions/setprop';
 import { Info } from './info';
+import { Settings } from './lib/Db';
 
-export default function App() {
+export default async function App() {
+    await Settings.init();
     const p = new Command();
     p.name(Info.name).version(Info.version).description(Info.description);
 
@@ -144,7 +147,51 @@ export default function App() {
         .option('-y, --yes', 'confirm question')
         .description('install a cmdpkg')
         .argument('<path>', 'path to cmdpkg')
-        .action((path,options) => importPackage(path,options.yes));
+        .action((path, options) => importPackage(path, options.yes));
+    
+    const cfgcmd = p.command('config')
+        .aliases(['cfg', 'settings', 'setting'])
+        .description('change cmand config');
+    
+    cfgcmd.command('set')
+        .aliases(['s', 'add', 'a', 'update', 'u'])
+        .description('set a config value')
+        .argument('<key>', 'key of config')
+        .argument('<value>', 'value of config')
+        .option('-t, --type <type>', 'type of value', 'string')
+        .action((key, value, options) => {
+            const type = options.type;
+            if (type == 'string') {
+                setConfig(key, value);
+            } else if (type == 'number') {
+                setConfig(key, Number(value));
+            } else if (type == 'int') {
+                setConfig(key, parseInt(value));
+            } else if (type == 'float') {
+                setConfig(key, parseFloat(value));
+            } else if (type == 'boolean') {
+                setConfig(key, value=='true'||value=='yes'||value=='t'||value=='y');
+            } else {
+                console.error('Unknown type: ' + type);
+            }
+        });
+    
+    cfgcmd.command('get')
+        .aliases(['g', 'show'])
+        .description('get a config value')
+        .argument('<key>', 'key of config')
+        .action((key) => getConfig(key));
+    
+    cfgcmd.command('remove')
+        .aliases(['del', 'delete', 'd', 'rm'])
+        .description('remove a config value')
+        .argument('<key>', 'key of config')
+        .action((key) => removeConfig(key));
+    
+    cfgcmd.command('list')
+        .aliases(['ls', 'dump'])
+        .description('list all config values')
+        .action(() => listConfig());
 
     p.parse(process.argv);
 }
