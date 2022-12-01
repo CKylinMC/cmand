@@ -13,6 +13,7 @@ import { remove } from './actions/remove';
 import { run, runLocalScripts } from './actions/run';
 import { search } from './actions/search';
 import { setprop } from './actions/setprop';
+import { update } from './actions/update';
 import { Info } from './info';
 import { Settings } from './lib/Db';
 
@@ -148,6 +149,12 @@ export default async function App() {
         .description('install a cmdpkg')
         .argument('<path>', 'path to cmdpkg')
         .action((path, options) => importPackage(path, options.yes));
+
+    p.command('update')
+        .aliases(['upgrade'])
+        .option('-y, --yes', 'download update and install')
+        .description('check for cmand updates')
+        .action((options) => update(options.yes));
     
     const cfgcmd = p.command('config')
         .aliases(['cfg', 'settings', 'setting'])
