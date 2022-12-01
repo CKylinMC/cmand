@@ -24,7 +24,7 @@ export async function update(download = false) {
             const url = latest.html_url;
             const asset = latest.assets.find((asset) => asset.name === 'cmand.exe');
             const exe = asset?.browser_download_url;
-            const size = asset.size;
+            const size = asset?.size;
             if (latestVersion != 'v' + Info.version) {
                 spinner1.success(chalk.yellow(`New version ${latestVersion}${isBeta?" (Beta)":""} found.`),"");
                 console.log(chalk.yellow(`Check out more information at ${url}`));
