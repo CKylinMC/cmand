@@ -20,6 +20,7 @@
     "premakepack": "npm run build",
     "makepack": "pkg build\\main\\index.js -t win -o dist\\cmand.exe",
     "build": "tsc -p tsconfig.json",
+    "dev": "node build\\main\\index.js",
     "postinstall": "tsc -p tsconfig.json&&pkg build\\main\\index.js -t win -o dist\\cmand.exe"
   },
   "pkg": {

@@ -41,7 +41,7 @@ class Db{
         }
         return new Promise((r,j)=>Db.db.find({}, (err, docs) => err?j(err):r(docs)));
     }
-    static searchScripts(nameOrDescriptionOrPath: string):Promise<any> {
+    static searchScripts(nameOrDescriptionOrPath: string|RegExp):Promise<any> {
         return new Promise((r,j)=>Db.db.find({
             $or: [
                 { name: { $regex: nameOrDescriptionOrPath } },
