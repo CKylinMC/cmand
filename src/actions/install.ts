@@ -161,10 +161,13 @@ export async function importPackage(targetpath,y=false) {
         metadata = JSON.parse(zip.readAsText(fileList['metadata.json']));
     } catch (e) {
         console.log(chalk.red(`Package ${targetPath} is not a valid package.`));
+        removeTempFile();
+        return;
     }
 
     if (!metadata.cmandpkgver || !allowedPackageVersion.includes(metadata.cmandpkgver)) {
         console.log(chalk.red(`Package ${targetPath} is not compatiable with current CMAND version.`));
+        removeTempFile();
         return;
     }
 
@@ -194,7 +197,7 @@ export async function importPackage(targetpath,y=false) {
             return;
         }
         if(await Db.getScriptByName(script.name)){
-            console.log(chalk.yellow(`Script ${script.name} in package ${metadata.name} already exists.`));
+            console.log(chalk.yellow(`Script ${script.name} in package ${metadata.name} already exists, it will be overrided.`));
             overrideList.push(script.name);
         }
     }
@@ -241,13 +244,14 @@ export async function importPackage(targetpath,y=false) {
             }
         ]);
         if (!answers.confirm) {
-            console.log(chalk.yellow('Install cancelled.'));
+            console.log(chalk.yellow('Installation cancelled.'));
             removeTempFile();
             return;
         }
     }
     console.log(chalk.yellow(`Installing ${metadata.name}...`));
-    try{
+    try {
+        let scriptObjs = [];
         for (let script of metadata.scripts) {
             console.log(chalk.gray(`Adding script ${script.filename}...`));
             const entry = fileList['scripts/' + script.filename];
@@ -260,10 +264,11 @@ export async function importPackage(targetpath,y=false) {
                 reqAdmin: script.reqAdmin ?? false,
                 enabled: true,
             };
+            scriptObjs.push(obj);
             exceptSync(() => fs.unlinkSync(scriptpath));
             zip.extractEntryTo(entry, path.join(home, 'scripts'), false, true, script.filename);
             await except(() => Db.removeScriptByName(script.name));
-            await Db.addScript(obj);
+            // await Db.addScript(obj);
         }
         const resourceList = [];
         for (let resource of metadata.include) {
@@ -273,6 +278,7 @@ export async function importPackage(targetpath,y=false) {
             resourceList.push({resource,resourcepath,entry});
             zip.extractEntryTo(entry, path.join(home, 'scripts', 'include'), true, true, resource.path);
         }
+        let errorMark = false;
         for (let res of resourceList) {
             console.log(chalk.gray(`Verifing resource ${res.resource.path}...`));
             const hash = res.resource.md5;
@@ -280,8 +286,20 @@ export async function importPackage(targetpath,y=false) {
             const realhash = await md5File(file);
             if(!hash || hash != realhash){
                 console.log(chalk.red(`Resource ${res.resource.path} is corrupted.`));
-                throw new Error();
+                errorMark = true;
+                break;
             }
+        }
+        if (errorMark) {
+            console.log(chalk.red(`Installation failed: files broken. Cleaning up...`));
+            for (let res of resourceList) {
+                exceptSync(()=>fs.unlinkSync(res.resourcepath));
+            }
+            for (let script of scriptObjs) {
+                exceptSync(()=>fs.unlinkSync(script.path));
+            }
+            removeTempFile();
+            return;
         }
         if (metadata.postInstallScript) {
             console.log(chalk.gray("Executing post-install script..."));
@@ -311,7 +329,7 @@ export async function importPackage(targetpath,y=false) {
                 throw new Error();
             }
         }
-        console.log(chalk.green('\nInstall completed.'));
+        console.log(chalk.green('\nInstallation completed.'));
         removeTempFile();
     } catch (e) {
         console.log(chalk.red(`\nFailed to install package ${metadata.name}.`));
