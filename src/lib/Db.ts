@@ -90,7 +90,7 @@ export class Settings{
     }
     static async set(k, v, onlyIfNotExist = false) {
         const s = await Settings.get(k);
-        if (s===null) {
+        if (s !== null) {
             if (onlyIfNotExist) return;
             await Settings.db.update({ key: k }, { $set: { value: v } });
         } else {
