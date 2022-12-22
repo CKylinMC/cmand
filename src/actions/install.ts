@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import AdmZip from 'adm-zip';
-import { md5, exceptSync, except, randstr } from '../lib/utils';
+import { md5, exceptSync, except, randstr, proxyedUrl } from '../lib/utils';
 import md5File from 'md5-file';
 import inquirer from 'inquirer';
 import Db, { Settings } from '../lib/Db';
@@ -19,11 +19,13 @@ export async function searchCloud(name, askdownload=false, download = false, out
         err(chalk.red('Remote install is disabled.'));
         return [false,'',''];
     }
-    const listurl = await Settings.get('repolist', '');
+    let listurl = await Settings.get('repolist', '');
     if(!listurl||listurl.length===0) {
         log(chalk.red('No repo list url found.'));
         return [false,'',''];
     }
+    let cfproxy = await Settings.get('cfproxy', '');
+    listurl = proxyedUrl(cfproxy, listurl);
     let list;
     try {
         list = await got(listurl).json();
@@ -82,7 +84,8 @@ export async function searchCloud(name, askdownload=false, download = false, out
     const temp = path.join(os.tmpdir(), "cmand-dl-run-" + randstr());
     try {
         exceptSync(() => fs.mkdirSync(temp));
-        const downloadUrl = `${urlbase}${reposource}/${pkg.path}`;
+        let downloadUrl = `${urlbase}${reposource}/${pkg.path}`;
+        downloadUrl = proxyedUrl(cfproxy, downloadUrl);
         const filename = path.basename(pkg.path);
         const filepath = path.join(temp, filename);
         // console.log({downloadUrl,filepath});

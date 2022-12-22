@@ -69,6 +69,11 @@ class Db{
     }
 }
 
+export const CONSTS = {
+    UPDATE_URL: 'https://api.github.com/repos/CKylinMC/cmand/releases',
+    REPO_LIST: 'https://fastly.jsdelivr.net/gh/ckylinmc/cmdpkg_repo/list.json',
+}
+
 // create instance for database only when call, so it will be created after init()
 export class Settings{
     static _db: Datastore;
@@ -85,10 +90,11 @@ export class Settings{
     }
     static async set(k, v, onlyIfNotExist = false) {
         const s = await Settings.get(k);
-        if (s) {
+        if (s===null) {
             if (onlyIfNotExist) return;
             await Settings.db.update({ key: k }, { $set: { value: v } });
         } else {
+            await Settings.db.remove({ key: k });
             await Settings.db.insert({ key: k, value: v });
         }
     }
@@ -102,11 +108,17 @@ export class Settings{
         return new Promise((r,j)=>Settings.db.find({}, (err, docs) => err?j(err):r(docs)));
     }
     static async init() {
-        if (!(await Settings.has('init_v1'))) {
-            await Settings.set('ver', 1);
-            await Settings.set('repolist', 'https://fastly.jsdelivr.net/gh/ckylinmc/cmdpkg_repo/list.json');
-            await Settings.set('allowRemoteInstall', true);
-            await Settings.set('init_v1', true);
+        if (!(await Settings.has('ver'))) {
+            await Settings.set('ver', 2);
+            await Settings.set('repolist', CONSTS.REPO_LIST, true);
+            await Settings.set('allowRemoteInstall', true, true);
+            await Settings.set('update_url', CONSTS.UPDATE_URL, true);
+            await Settings.set('cfproxy', '', true);
+        }
+        if (await Settings.get('ver') < 2) {
+            await Settings.set('update_url', CONSTS.UPDATE_URL, true);
+            await Settings.set('cfproxy', '', true);
+            await Settings.set('ver', 2);
         }
     }
 }

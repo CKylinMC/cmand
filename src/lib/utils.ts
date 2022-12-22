@@ -57,4 +57,19 @@ const fallback = {
 	error: chalk.red('×'),
 };
 
+export function proxyedUrl(cfproxy, url) {
+	if (cfproxy.length > 0) {
+		if (cfproxy.endsWith('/')) {
+			cfproxy = cfproxy.substr(0, cfproxy.length - 1);
+		}
+		if (url.startsWith("https://")) {
+			url = url.replace("https://", "/");
+		} else if (url.startsWith("http://")) {
+			url = url.replace("http://", "/");
+		}
+		url = cfproxy + url;
+	}
+	return url;
+}
+
 export const logSymbols = isUnicodeSupported() ? main : fallback;

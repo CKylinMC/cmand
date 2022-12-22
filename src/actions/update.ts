@@ -1,13 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import { exceptSync, randstr } from '../lib/utils';
+import { exceptSync, proxyedUrl, randstr } from '../lib/utils';
 import inquirer from 'inquirer';
 import { Info } from '../info';
 import os from 'os';
 import { execute } from './run';
 import got from 'got';
 import { Spinner } from '../lib/Spinner';
+import { CONSTS, Settings } from '../lib/Db';
 
 export async function update(download = false) {
     if (!('pkg' in process)) {
@@ -15,15 +16,21 @@ export async function update(download = false) {
         return;
     }
     console.log(`Current version: v${Info.version}`);
+    let updateUrl = await Settings.get('update_url');
+    if (updateUrl != CONSTS.UPDATE_URL) {
+        console.log(chalk.yellow(`Using custom update url: ${updateUrl}`));
+    }
+    let cfproxy = await Settings.get('cfproxy', '');
+    updateUrl = proxyedUrl(cfproxy, updateUrl);
     let spinner1 = new Spinner("Checking for update...").start();
-    got('https://api.github.com/repos/CKylinMC/cmand/releases').json().then(
+    got(updateUrl).json().then(
         async (releases: any[]):Promise<any> => {
             const latest = releases[0];
             const latestVersion = latest.tag_name;
             const isBeta = latest.prerelease;
             const url = latest.html_url;
             const asset = latest.assets.find((asset) => asset.name === 'cmand.exe');
-            const exe = asset?.browser_download_url;
+            let exe = asset?.browser_download_url;
             const size = asset?.size;
             if (latestVersion != 'v' + Info.version) {
                 spinner1.success(chalk.yellow(`New version ${latestVersion}${isBeta?" (Beta)":""} found.`),"");
@@ -48,6 +55,7 @@ export async function update(download = false) {
                     const filepath = path.join(temp, "cmand.update.exe");
                     
                     await new Promise((r, j) => {
+                        exe = proxyedUrl(cfproxy, exe);
                         const stream = got.stream(exe);
                         let lastdata = 0;
                         let lastTime = Date.now();

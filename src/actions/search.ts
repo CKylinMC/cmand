@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import got from 'got/dist/source';
-import Db, { Settings } from "../lib/Db";
+import Db, { CONSTS, Settings } from "../lib/Db";
+import { proxyedUrl } from '../lib/utils';
 
 export async function search(searchText) {
     const scripts = await Db.searchScripts(new RegExp(searchText,'ig'));
@@ -17,15 +18,20 @@ export async function search(searchText) {
 
 export async function searchRemote(searchText):Promise<any> {
     const allowedRepofileVerion = [1];
-    const log = (...msg) => console.log(...msg);
+    const log = console.log;
     if (!(await Settings.get('allowRemoteInstall', true))) {
         return;
     }
-    const listurl = await Settings.get('repolist', '');
+    let listurl = await Settings.get('repolist', CONSTS.REPO_LIST);
+    if (listurl != CONSTS.REPO_LIST) {
+        log(chalk.yellow('Using custom repo list url: ' + listurl));
+    }
     if(!listurl||listurl.length===0) {
         log(chalk.red('No repo list url found.'));
         return;
     }
+    let cfproxy = await Settings.get('cfproxy', '');
+    listurl = proxyedUrl(cfproxy, listurl);
     let list;
     try {
         list = await got(listurl).json();
