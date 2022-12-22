@@ -3,7 +3,6 @@ import path from 'path';
 import chalk from 'chalk';
 import Db from '../lib/Db';
 import AdmZip from 'adm-zip';
-import { randstr } from '../lib/utils';
 import md5File from 'md5-file';
 
 export async function exportPackage(name) {
@@ -61,7 +60,7 @@ export async function exportPackage(name) {
     };
 
 
-    const filename = `${script.name}-${randstr(8)}.cmdpkg`;
+    const filename = `${script.name}.cmdpkg`;
     const zip = new AdmZip();
     zip.addFile("metadata.json", Buffer.from(JSON.stringify(metadata), "utf8"), "CMAND METADATA");
     zip.addLocalFile(script.path, "scripts", path.basename(script.path));
