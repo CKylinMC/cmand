@@ -25,11 +25,11 @@ jobs:
           prerelease: true
           files: |
             *.exe
-      - name: Setup Aliyun OSS
-        uses: ckylinmc/setup-ossutil@master
-        with:
-            endpoint: ${{ secrets.ALI_ENDPOINT }}
-            access-key-id: ${{ secrets.ALI_ACCESSKEYID }}
-            access-key-secret: ${{ secrets.ALI_ACCESSKEYSECRET }}
-      - name: Upload to Aliyun OSS
-        run: ossutil cp -f cmand.exe ${{ secrets.ALI_BUCKETPATH_WEBDEV }}
+#       - name: Setup Aliyun OSS
+#         uses: ckylinmc/setup-ossutil@master
+#         with:
+#             endpoint: ${{ secrets.ALI_ENDPOINT }}
+#             access-key-id: ${{ secrets.ALI_ACCESSKEYID }}
+#             access-key-secret: ${{ secrets.ALI_ACCESSKEYSECRET }}
+#       - name: Upload to Aliyun OSS
+#         run: ossutil cp -f cmand.exe ${{ secrets.ALI_BUCKETPATH_WEBDEV }}
