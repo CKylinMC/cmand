@@ -1,7 +1,10 @@
-name: Build Executable
-on: [push]
+name: Build Executable And Release
+on:
+  push:
+    tags:
+      - "v*"
 jobs:
-  Build-Executable:
+  Build-Executable-And-Release:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
@@ -10,7 +13,23 @@ jobs:
           node-version: 16
       - run: npm install 
       - run: npm run makepack
-      - uses: actions/upload-artifact@v3
+#       - uses: actions/upload-artifact@v3
+#         with:
+#           name: windows-x64
+#           path: dist/*.exe
+      - run: |
+          mv dist/*.exe .
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          name: windows-x64
-          path: dist/*.exe
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+          files: |
+            *.exe
+      - name: Setup Aliyun OSS
+        uses: ckylinmc/setup-ossutil@master
+        with:
+            endpoint: ${{ secrets.ALI_ENDPOINT }}
+            access-key-id: ${{ secrets.ALI_ACCESSKEYID }}
+            access-key-secret: ${{ secrets.ALI_ACCESSKEYSECRET }}
+      - name: Upload to Aliyun OSS
+        run: ossutil cp -f cmand.exe ${{ secrets.ALI_BUCKETPATH_WEBDEV }}
