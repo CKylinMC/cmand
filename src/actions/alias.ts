@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import { home } from '../info';
+import { scripthome } from '../info';
 import Db from '../lib/Db';
 
 export async function alias(name = '', runathere = false, commands) {
@@ -20,7 +20,7 @@ export async function alias(name = '', runathere = false, commands) {
         name,
         path.extname(name)
     );
-    const scriptpath = path.join(home, 'scripts', name);
+    const scriptpath = path.join(scripthome(), name);
     // remove first two items
     commands.splice(0, 2);
     if (runathere) {

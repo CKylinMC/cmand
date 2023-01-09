@@ -90,8 +90,8 @@ export default async function App() {
 
     p.command('info')
         .aliases(['get', 'i'])
-        .description('Get information of an existing script')
-        .argument('<name>', 'name of the script')
+        .description('Get information of an existing script. Use without paramater to get information of cmand.')
+        .argument('[name]', 'name of the script')
         .action((name) => info(name));
 
     p.command('set')

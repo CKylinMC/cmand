@@ -3,7 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import yaml from 'yaml';
-import { home } from '../info';
+import { scripthome } from '../info';
 import Db from '../lib/Db';
 
 export async function create(name = null) {
@@ -54,7 +54,7 @@ export async function create(name = null) {
                 filename,
                 path.extname(filename)
             );
-            const scriptpath = path.join(home, 'scripts', filename);
+            const scriptpath = path.join(scripthome(), filename);
             fs.writeFileSync(scriptpath, 'echo This script isn\'t yet implemented.');
             // add to db
             await Db.addScript({

@@ -2,12 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import Db from '../lib/Db';
+import { dbpath, home, Info, scripthome, settingspath } from '../info';
 
 export async function info(name) {
+    if (!name) {
+        return coreInfo();
+    }
     //check if existed
     const script = await Db.getScriptByName(name);
     if (!script) {
-        console.log(chalk.red(`Script ${name} not found.`));
+        console.log();
         return;
     }
     // check file of the script path is still valid
@@ -34,4 +38,18 @@ export async function info(name) {
     // is shell or cmd or batch or python or executable or (extension)
     const ext = path.extname(script.path);
     console.log(`Type: ${ext.substring(1)}`);
+}
+
+export async function coreInfo() {
+    const dump = (key, value) => console.log(chalk.blue(key), "=>", chalk.green(JSON.stringify(value, null, 2)));
+    dump("[Inner] CMAND INFO",Info);
+    dump("CMAND_HOME", process.env.CMAND_HOME);
+    dump("[Inner] CMAND_HOME", home);
+    dump("CMAND_SCRIPTS", process.env.CMAND_SCRIPTS);
+    dump("[Inner] CMAND_SCRIPTS", scripthome());
+    dump("[Inner] database", dbpath());
+    dump("[Inner] settings", settingspath());
+    console.log("\nFor configuration details please use 'cmand config list' command.");
+    console.log("If you want to query informations of a script, please use 'cmand info <SCRIPT_NAME>'.");
+    console.log("Use 'cmand [SUB_COMMAND] help [SECTION]' to check help documents.");
 }

@@ -6,7 +6,7 @@ import { md5, exceptSync, except, randstr, proxyedUrl } from '../lib/utils';
 import md5File from 'md5-file';
 import inquirer from 'inquirer';
 import Db, { Settings } from '../lib/Db';
-import { home } from '../info';
+import { scripthome } from '../info';
 import os from 'os';
 import { execute } from './run';
 import got from 'got';
@@ -258,7 +258,7 @@ export async function importPackage(targetpath,y=false) {
         for (let script of metadata.scripts) {
             console.log(chalk.gray(`Adding script ${script.filename}...`));
             const entry = fileList['scripts/' + script.filename];
-            const scriptpath = path.join(home, 'scripts', script.filename);
+            const scriptpath = path.join(scripthome(), script.filename);
             const obj = {
                 name: script.name,
                 description: script.description,
@@ -269,7 +269,7 @@ export async function importPackage(targetpath,y=false) {
             };
             scriptObjs.push(obj);
             exceptSync(() => fs.unlinkSync(scriptpath));
-            zip.extractEntryTo(entry, path.join(home, 'scripts'), false, true, script.filename);
+            zip.extractEntryTo(entry, scripthome(), false, true, script.filename);
             await except(() => Db.removeScriptByName(script.name));
             // await Db.addScript(obj);
         }
@@ -277,9 +277,9 @@ export async function importPackage(targetpath,y=false) {
         for (let resource of metadata.include) {
             console.log(chalk.gray(`Extracting resource ${resource.path}...`));
             const entry = fileList['include/' + resource.path];
-            const resourcepath = path.join(home, 'scripts', 'include', resource.path);
+            const resourcepath = path.join(scripthome(), 'include', resource.path);
             resourceList.push({resource,resourcepath,entry});
-            zip.extractEntryTo(entry, path.join(home, 'scripts', 'include'), true, true, resource.path);
+            zip.extractEntryTo(entry, path.join(scripthome(), 'include'), true, true, resource.path);
         }
         let errorMark = false;
         for (let res of resourceList) {

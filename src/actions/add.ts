@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import { home } from '../info';
+import { scripthome } from '../info';
 import Db from "../lib/Db";
 
 export async function add(scriptpath='', name=null, description='',reqAdmin=false) {
@@ -30,7 +30,7 @@ export async function add(scriptpath='', name=null, description='',reqAdmin=fals
         return;
     }
     // copy to home
-    const newpath = path.join(home, 'scripts', `${filename}${path.extname(scriptpath)}`);
+    const newpath = path.join(scripthome(), `${filename}${path.extname(scriptpath)}`);
     fs.copyFileSync(scriptpath, newpath);
     // add to db
     await Db.addScript({

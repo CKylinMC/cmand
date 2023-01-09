@@ -20,7 +20,7 @@ class Db{
     static _db: Datastore;
     static get db() {
         if (!Db._db) {
-            Db._db = new Datastore({ filename: dbpath });
+            Db._db = new Datastore({ filename: dbpath() });
             Db._db.loadDatabase();
         }
         return Db._db;
@@ -79,7 +79,7 @@ export class Settings{
     static _db: Datastore;
     static get db() {
         if (!Settings._db) {
-            Settings._db = new Datastore({ filename: settingspath });
+            Settings._db = new Datastore({ filename: settingspath() });
             Settings._db.loadDatabase();
         }
         return Settings._db;
