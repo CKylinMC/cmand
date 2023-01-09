@@ -19,6 +19,12 @@ jobs:
 #           path: dist/*.exe
       - run: |
           mv dist/*.exe .
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+          files: |
+            *.exe
       - name: Setup Aliyun OSS
         uses: ckylinmc/setup-ossutil@master
         with:
@@ -27,9 +33,3 @@ jobs:
             access-key-secret: ${{ secrets.ALI_ACCESSKEYSECRET }}
       - name: Upload to Aliyun OSS
         run: ossutil cp -f cmand.exe ${{ secrets.ALI_BUCKETPATH_WEBDEV }}
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
-          files: |
-            *.exe
