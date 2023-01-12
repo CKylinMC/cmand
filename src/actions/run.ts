@@ -19,6 +19,10 @@ export async function run(name, args, forceAdmin = false) {
         console.log(chalk.red(`Script ${name} not found.`));
         return;
     }
+    if (!script.enabled) {
+        console.log(chalk.red(`Script ${name} has been disabled.`));
+        return;
+    }
     // check file of the script path is still valid
     if (!fs.existsSync(script.path)) {
         console.log(chalk.red(`Script ${name} path not found.`));
@@ -50,7 +54,7 @@ export async function runLocalScripts(taskname, args, output=true):Promise<any> 
                 return;
             }
             const scriptName = path.join(dir, 'script.cmd');
-            fs.writeFileSync(scriptName, "@echo off\n"+scripts[taskname].toString());
+            fs.writeFileSync(scriptName, "@echo off\nset EXECUTOR=CMAND\n"+scripts[taskname].toString());
             console.log(chalk.gray('> Task: ' + taskname));
             await execute({
                 name: taskname,
@@ -74,6 +78,10 @@ export async function executeAsAdmin(script: Script, args) {
     return new Promise(r => {
         sudo(cmd, {
             name: "CMAND Script Manager",
+            env: {
+                ...process.env,
+                "EXECUTOR": "CMAND"
+            }
         }, function (error, stdout, stderr) {
             const endtime = new Date().getTime();
             if (error) {
@@ -90,11 +98,17 @@ export async function executeAsAdmin(script: Script, args) {
 }
 
 export async function execute(script: Script, args) {
-    // execute script in current cd
+    // execute script in current path
     const { path } = script;
     const starttime = new Date().getTime();
     return new Promise(r => {
-        const child = spawn(path, args);
+        const child = spawn(path, {
+            ...args,
+            env: {
+                ...process.env,
+                "EXECUTOR": "CMAND"
+            }
+        });
         child.stdout.on('data', (data) => {
             console.log(data.toString());
         });
