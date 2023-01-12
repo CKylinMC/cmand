@@ -62,8 +62,7 @@ class Db{
             $or: [
                 { name },
                 { aliases: { $in: [name] } }
-            ],
-            enabled: true
+            ]
         }, (err, docs) => err?j(err):r(docs)));
         //return Db.scripts.findOne({ $or: [{ name }, { aliases: { $contains: name } }] });
     }

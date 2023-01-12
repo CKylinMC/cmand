@@ -66,6 +66,11 @@ export class Spinner{
         this.stream.write(`${icon}${aftertext}\n`);
     }
 
+    replace(text = null) {
+        this.stop();
+        if(text)this.stream.write(text);
+    }
+
     text(str = null) {
         if (str != null)
             this.tip = str;

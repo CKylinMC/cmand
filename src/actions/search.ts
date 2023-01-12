@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import got from 'got/dist/source';
 import Db, { CONSTS, Settings } from "../lib/Db";
+import { Spinner } from '../lib/Spinner';
 import { proxyedUrl } from '../lib/utils';
 
 export async function search(searchText) {
@@ -32,9 +33,11 @@ export async function searchRemote(searchText):Promise<any> {
     }
     let cfproxy = await Settings.get('cfproxy', '');
     listurl = proxyedUrl(cfproxy, listurl);
+    const spinner = new Spinner("Searching on remote repostory...").start();
     let list;
     try {
         list = await got(listurl).json();
+        spinner.replace();
     } catch (e) {
         log(chalk.red('Failed to get repo list.'));
         return;
