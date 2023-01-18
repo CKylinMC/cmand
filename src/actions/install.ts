@@ -87,8 +87,9 @@ export async function searchCloud(name, askdownload=false, download = false, out
     const source_types = list.sources;
     // console.log({list})
     let urlbase = asUrlbase(list.urlbase);
+    let source_type = 'default';
     if (source_types) {
-        let source_type = await Settings.get('source', '');
+        source_type = await Settings.get('source', '');
         if (!source_type || !source_types.hasOwnProperty(source_type)) {
             source_type = await determineSource(source_types, true);
             await Settings.set('source', source_type);
@@ -96,6 +97,7 @@ export async function searchCloud(name, askdownload=false, download = false, out
         urlbase = asUrlbase(source_types[source_type]);
         // console.log({source_type,source_types,urlbase,listbase:list.urlbase});
     }
+    console.log(chalk.gray(`Using ${source_type} as source.`))
     const temp = path.join(os.tmpdir(), "cmand-dl-run-" + randstr());
     const spinner = new Spinner(chalk.gray(`Preparing to download...`)).start();
     try {
