@@ -422,7 +422,7 @@ async function determineSource(sources, verbose = false, spinner = null) {
             timeout: 2
         });
         if (result.alive&&_pingTimeIsValid(result.time)) {
-            if(verbose)spinner.log(`${sourceName} => ${result.time}`);
+            if(verbose)spinner.log(`${sourceName} => ${result.time} ms`);
             if(result.time < fastest.time){
                 fastest.source = sourceName;
                 fastest.time = result.time;
