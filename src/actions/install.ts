@@ -10,6 +10,8 @@ import { scripthome } from '../info';
 import os from 'os';
 import { execute } from './run';
 import got from 'got';
+import { Spinner } from '../lib/Spinner';
+import ping from 'ping';
 
 export async function searchCloud(name, askdownload=false, download = false, output = true) {
     const allowedRepofileVerion = [1];
@@ -45,7 +47,8 @@ export async function searchCloud(name, askdownload=false, download = false, out
         log(chalk.red('Repolist file version is not supported.'));
         return [false,'',''];
     }
-    const urlbase = list.urlbase.endsWith('/') ? list.urlbase : list.urlbase + '/';
+    // const urlbase = list.urlbase.endsWith('/') ? list.urlbase : list.urlbase + '/';
+    const asUrlbase = (url)=> url.endsWith('/') ? url : url + '/';
     const reposource = list.reposource;
     const repo = list.repofile;
     const pkgs = list.pkgs;
@@ -81,32 +84,65 @@ export async function searchCloud(name, askdownload=false, download = false, out
     } else if (!download) {
         return [true,'',''];
     }
+    const source_types = list.sources;
+    // console.log({list})
+    let urlbase = asUrlbase(list.urlbase);
+    if (source_types) {
+        let source_type = await Settings.get('source', '');
+        if (!source_type || !source_types.hasOwnProperty(source_type)) {
+            source_type = await determineSource(source_types, true);
+            await Settings.set('source', source_type);
+        }
+        urlbase = asUrlbase(source_types[source_type]);
+        // console.log({source_type,source_types,urlbase,listbase:list.urlbase});
+    }
     const temp = path.join(os.tmpdir(), "cmand-dl-run-" + randstr());
+    const spinner = new Spinner(chalk.gray(`Preparing to download...`)).start();
     try {
         exceptSync(() => fs.mkdirSync(temp));
         let downloadUrl = `${urlbase}${reposource}/${pkg.path}`;
         downloadUrl = proxyedUrl(cfproxy, downloadUrl);
         const filename = path.basename(pkg.path);
         const filepath = path.join(temp, filename);
-        // console.log({downloadUrl,filepath});
-        log(chalk.gray(`Downloading ${pkg.name} from ${repo}...`));
+        // console.log({ downloadUrl, filepath });
+        spinner.text(chalk.gray(`Downloading ${pkg.name} from ${repo}...`));
         await new Promise((r, j) => {
             const stream = got.stream(downloadUrl);
             stream.on('error', j);
             const writer = fs.createWriteStream(filepath);
             writer.on('error', j);
             writer.on('finish', r);
+            
+            let lastdata = 0;
+            let lastTime = Date.now();
+            let speed = 0;
+            stream.on("downloadProgress", ({ transferred, total, percent }) => {
+                const now = Date.now();
+                const diff = transferred - lastdata;
+                if (now - lastTime > 1000) {
+                    speed = diff;
+                    lastTime = now;
+                    lastdata = transferred;
+                }
+                const speedKB = Math.round(speed / 1024);
+                const percentage = isNaN(total)?"?":Math.round(percent * 100);
+                const transferredMB = isNaN(total)?"?":Math.round(transferred / 1024 / 10.24) / 100;
+                const totalMB = isNaN(total) ? "?" : Math.round(total / 1024 / 10.24) / 100;
+                const speedTxt = speed!=0?(` - ${speedKB} KB/s`):'';
+                spinner.text(chalk.gray(`Downloading... ${transferredMB} MB / ${totalMB} MB (${percentage}%)${speedTxt}`));
+            })
             stream.pipe(writer);
         });
+        spinner.text(chalk.gray(`Verifying...`));
         const md5sum = await md5File(filepath);
         if (md5sum !== pkg.md5) {
-            log(chalk.red(`Downloaded file is corrupted.`));
+            spinner.fail(chalk.red(`Downloaded file is corrupted.`));
             throw new Error();
         }
-        log(chalk.green(`Downloaded ${pkg.name} from ${repo}.`));
+        spinner.success(chalk.green(`Downloaded ${pkg.name} from ${repo}.`));
         return [true, filepath, temp];
     }catch(e) {
-        log(chalk.red(`Failed to download ${pkg.name}.`));
+        spinner.fail(chalk.red(`Failed to download ${pkg.name}.`));
         // console.log(e);
         try {
             exceptSync(() => fs.unlinkSync(temp));
@@ -269,9 +305,9 @@ export async function importPackage(targetpath,y=false) {
             };
             scriptObjs.push(obj);
             exceptSync(() => fs.unlinkSync(scriptpath));
-            zip.extractEntryTo(entry, scripthome(), false, true, script.filename);
+            zip.extractEntryTo(entry, scripthome(), false, true, false);
             await except(() => Db.removeScriptByName(script.name));
-            // await Db.addScript(obj);
+            await Db.addScript(obj);
         }
         const resourceList = [];
         for (let resource of metadata.include) {
@@ -279,7 +315,7 @@ export async function importPackage(targetpath,y=false) {
             const entry = fileList['include/' + resource.path];
             const resourcepath = path.join(scripthome(), 'include', resource.path);
             resourceList.push({resource,resourcepath,entry});
-            zip.extractEntryTo(entry, path.join(scripthome(), 'include'), true, true, resource.path);
+            zip.extractEntryTo(entry, scripthome(), true, true, false);
         }
         let errorMark = false;
         for (let res of resourceList) {
@@ -336,7 +372,7 @@ export async function importPackage(targetpath,y=false) {
         removeTempFile();
     } catch (e) {
         console.log(chalk.red(`\nFailed to install package ${metadata.name}.`));
-        console.log(chalk.red(e));
+        // console.log(chalk.red(e));
         removeTempFile();
         return;
     }
@@ -360,4 +396,49 @@ export async function importPackage(targetpath,y=false) {
         ],
     };
     */
+}
+
+function _pingTimeIsValid(time: Number | "unknown"): time is Number{
+    // Telling typescript that time is a number
+    return !!time||true;
+}
+
+async function determineSource(sources, verbose = false, spinner = null) {
+    if (verbose) {
+        if (!spinner) {
+            spinner = new Spinner('Determining fastest source...').start();
+        }
+    }
+    const fastest = {
+        source: "github",
+        time:Infinity
+    }
+    for (const sourceName in sources) {
+        const sourceUrl = getHostname(sources[sourceName]);
+        if(verbose)spinner.text(`Testing source ${sourceName}...`);
+        const result = await ping.promise.probe(sourceUrl, {
+            timeout: 2
+        });
+        if (result.alive&&_pingTimeIsValid(result.time)) {
+            if(verbose)spinner.log(`${sourceName} => ${result.time}`);
+            if(result.time < fastest.time){
+                fastest.source = sourceName;
+                fastest.time = result.time;
+            }
+        } else {
+            if(verbose)spinner.log(`Source ${sourceName} is not reachable.`);
+        }
+    }
+    if(verbose)spinner.success(`Fastest source is ${fastest.source} with ${fastest.time}ms.`);
+    if (verbose) await new Promise(r => setTimeout(r, 10));
+    return fastest.source;
+}
+
+function getHostname(url) {
+    try {
+        const parsed = new URL(url);
+        return parsed.hostname;
+    }catch(err) {
+        return url;
+    }
 }

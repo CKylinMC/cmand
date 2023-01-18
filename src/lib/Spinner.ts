@@ -44,6 +44,14 @@ export class Spinner{
         return this;
     }
 
+    log(text = null) {
+        this.clear();
+        if (text) this.stream.write(text);
+        this.stream.write('\n');
+        this.clear();
+        return this;
+    }
+
     stop() {
         if (this.status != 1) return this;
         this.status = 2;
