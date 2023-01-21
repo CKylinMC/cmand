@@ -45,6 +45,7 @@
     "commander": "^9.5.0",
     "commonjs-ora": "^1.0.2",
     "crypto": "^1.0.1",
+    "global-agent": "^3.0.0",
     "got": "^11",
     "homedir": "^0.6.0",
     "i": "^0.3.7",
@@ -59,6 +60,7 @@
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@types/global-agent": "^2.1.1",
     "@types/ping": "^0.4.1",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
     "@typescript-eslint/parser": "^5.48.0",

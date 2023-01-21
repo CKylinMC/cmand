@@ -107,18 +107,13 @@ export class Settings{
         return new Promise((r,j)=>Settings.db.find({}, (err, docs) => err?j(err):r(docs)));
     }
     static async init() {
-        if (!(await Settings.has('ver'))) {
-            await Settings.set('ver', 2);
-            await Settings.set('repolist', CONSTS.REPO_LIST, true);
-            await Settings.set('allowRemoteInstall', true, true);
-            await Settings.set('update_url', CONSTS.UPDATE_URL, true);
-            await Settings.set('cfproxy', '', true);
-        }
-        if (await Settings.get('ver') < 2) {
-            await Settings.set('update_url', CONSTS.UPDATE_URL, true);
-            await Settings.set('cfproxy', '', true);
-            await Settings.set('ver', 2);
-        }
+        await Settings.set('ver', 2);
+        await Settings.set('repolist', CONSTS.REPO_LIST, true);
+        await Settings.set('allowRemoteInstall', true, true);
+        await Settings.set('update_url', CONSTS.UPDATE_URL, true);
+        await Settings.set('cfproxy', '', true);
+        await Settings.set('proxy', '', true);
+        await Settings.set('update_url', CONSTS.UPDATE_URL, true);
     }
 }
 
