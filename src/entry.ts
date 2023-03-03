@@ -137,7 +137,8 @@ export default async function App() {
         .description('run task from cmand.yml in current directory')
         .argument('[name]', 'name of the task')
         .option('-a, --add', 'add new task')
-        .action((name,options) => (name&&name!=undefined&&typeof(name)=='string'&&name.length)?(options.add?createTask(name,p.args.slice(3).join(' ')):runLocalScripts(name, p.args.slice(2))):listTasks());
+        .option('-f, --config', 'specify config file')
+        .action((name,options) => (name&&name!=undefined&&typeof(name)=='string'&&name.length)?(options.add?createTask(name,p.args.slice(3).join(' ')):runLocalScripts(name, p.args.slice(2), options.config||null)):listTasks());
 
     p.command('run-as-admin')
         .aliases(['adminrun', 'sudo', 'e'])

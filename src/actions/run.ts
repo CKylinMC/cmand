@@ -9,7 +9,7 @@ import Db, { Script } from '../lib/Db';
 
 export async function run(name, args, forceAdmin = false) {
     
-    if (await runLocalScripts(name, args, false)) {
+    if (await runLocalScripts(name, args, null, false)) {
         return;// run local script
     }
 
@@ -37,12 +37,13 @@ export async function run(name, args, forceAdmin = false) {
     else execute(script, args.slice(2));
 }
 
-export async function runLocalScripts(taskname, args, output=true):Promise<any> {// return script found, not script successfully executed
-    if (!fs.existsSync('./cmand.yml')) {
+export async function runLocalScripts(taskname, args, runconfig='./cmand.yml', output=true):Promise<any> {// return script found, not script successfully executed
+    if(!runconfig) runconfig = './cmand.yml';
+    if (!fs.existsSync(runconfig)) {
         if(output)console.log(chalk.red('cmand.yml not found.'));
         return false;
     }
-    const scripts = yaml.parse(fs.readFileSync('./cmand.yml').toString());
+    const scripts = yaml.parse(fs.readFileSync(runconfig).toString());
     if (!scripts[taskname]) {
         if(output)console.log(chalk.red(`Task ${taskname} not found.`));
         return false;
