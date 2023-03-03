@@ -99,3 +99,56 @@ export async function createTask(taskname, contents) {
     fs.writeFileSync('./cmand.yml', yaml.stringify(scripts));
     console.log(chalk.green('Task added into cmand.yml, run "cmand task ' + taskname + '" to run it.'));
 }
+
+export async function makeProxyScript(filename, alias=null, runner=null) {
+    const sourcepath = path.resolve(process.cwd(), filename);
+    
+    if (!fs.existsSync(sourcepath)) {
+        console.log(chalk.red(`Path ${sourcepath} not found.`));
+        return;
+    }
+    console.log(chalk.blue(`Creating proxy script for ${filename}`));
+
+    let info = {
+        name: alias,
+        description: '',
+        sourcepath,
+        batchcontent: '',
+    }
+    if (alias) {
+        info.name = alias.trim().replace(/\s/, '_');
+    } else {
+        info.name = path.basename(sourcepath);
+        console.log(chalk.yellow(`Alias not specified, using filename ${info.name} as alias.`));
+    }
+    if (fs.statSync(sourcepath).isFile()) {
+        info.description = `Proxy script for file ${filename}`;
+        if (runner) {
+            info.batchcontent = `@${runner} "${sourcepath}" %*`;
+        } else {
+            info.batchcontent = `@"${sourcepath}" %*`;
+        }
+    } else {
+        info.description = `Proxy script for folder ${filename}`;
+        if (runner) {
+            info.batchcontent = `@${runner} "${sourcepath}" %*`;
+        } else {
+            info.batchcontent = `@cmd /k cd /d "${sourcepath}"`;
+        }
+    }
+    const scriptpath = path.join(scripthome(), info.name + ".cmd");
+    if (fs.existsSync(scriptpath)) {
+        console.log(chalk.red(`Script ${info.name}.cmd already exists.`));
+        return;
+    }
+    fs.writeFileSync(scriptpath, info.batchcontent);
+    await Db.addScript({
+        name: info.name,
+        description: info.description,
+        aliases: [filename],
+        path: scriptpath,
+        reqAdmin: false,
+        enabled: true,
+    });
+    console.log(chalk.green(`Proxy script ${info.name}.cmd created.`));
+}

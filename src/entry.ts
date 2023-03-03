@@ -3,7 +3,7 @@ import { add } from './actions/add';
 import { alias } from './actions/alias';
 import { cat } from './actions/cat';
 import { getConfig, listConfig, removeConfig, setConfig } from './actions/config';
-import { create, createTask } from './actions/create';
+import { create, createTask, makeProxyScript } from './actions/create';
 import { edit } from './actions/edit';
 import { exportPackage } from './actions/export';
 import { info } from './actions/info';
@@ -59,6 +59,14 @@ export default async function App() {
             'Create a new script. Script will be created in cmand home folder'
         )
         .action((name) => create(name));
+    
+    p.command('proxy')
+        .aliases(['p', 'expose'])
+        .option('-r, --runner', 'Specify a runner such as "python" for file type executables.')
+        .option('-n, --name', 'Specify a alias for the command which will be the proxy script name.')
+        .argument('<path>', 'Path to the file or folder you want to make it global usable.')
+        .description('Make a file or folder global usable.')
+        .action((path, options) => makeProxyScript(path, options.name?.trim()||null, options.runner?.trim()||null));
 
     p.command('alias')
         .argument('<alias>', 'alias of your commands, will be the name of the script')
