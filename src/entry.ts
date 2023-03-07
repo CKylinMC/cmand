@@ -21,6 +21,7 @@ import { setprop } from './actions/setprop';
 import { update } from './actions/update';
 import { Info } from './info';
 import { Settings } from './lib/Db';
+import { exportEnv } from './actions/env';
 
 export default async function App() {
     await Settings.init();
@@ -154,6 +155,13 @@ export default async function App() {
         .description('run an existing script')
         .argument('<name>', 'name of the script')
         .action((name) => run(name, p.args));
+
+    p.command('save-env')
+        .aliases(['env', 'export-env'])
+        .description('export current environment variables to a script')
+        .argument('<name>', 'name of the script')
+        .option('--no-prefix', 'don\'t prefix the script with "env-"')
+        .action((name, options) => exportEnv(name, options.prefix));
 
     p.command('task')
         .aliases(['runtask', 't'])
