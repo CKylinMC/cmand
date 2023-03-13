@@ -14,9 +14,20 @@ export async function init(): Promise<any> {
     if (!fs.existsSync(scripthome())) {
         fs.mkdirSync(scripthome());
     }
-    const cmdpath = process.env.PATH;
+    // const cmdpath = process.env.PATH;
     const nocheck = process.env.CMAND_NOPATHCHECK;
-    if (!nocheck&&(!cmdpath || cmdpath.toLowerCase().indexOf('cmand')==-1))
+    const CMAND_SCRIPTS = process.env.CMAND_SCRIPTS??null;
+    // if (!nocheck && (!cmdpath || cmdpath.toLowerCase().indexOf('cmand') == -1))
+    //     return addDirToEnvPath(home, {
+    //         position: 'start',
+    //         proxyVarName: 'CMAND_SCRIPTS',
+    //         overwrite: true,
+    //         configSectionName: 'cmand-scripts',
+    //     }).then(() => {
+    //         console.log("[FIRST RUN] Added CMAND_SCRIPTS variable into your PATH variable. Remeber to remove it if you dont use cmand any more.");
+    //         return;
+    //     });
+    if(!nocheck && (!CMAND_SCRIPTS))
         return addDirToEnvPath(scripthome(), {
             position: 'start',
             proxyVarName: 'CMAND_SCRIPTS',
