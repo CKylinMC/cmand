@@ -55,7 +55,7 @@
     "ping": "^0.4.2",
     "pkg": "^5.8.0",
     "sudo-prompt": "^9.2.1",
-    "yaml": "^2.2.1"
+    "yaml": "^2.2.2"
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
