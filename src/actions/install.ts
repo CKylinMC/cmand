@@ -182,7 +182,7 @@ export async function importPackage(targetpath,y=false) {
         }
     }
 
-    console.log(chalk.yellow(`Reading package ${targetPath}...`));
+    console.log(chalk.gray(`Reading package ${targetPath}...`));
 
     const zip = new AdmZip(targetPath);
     const zipEntries = zip.getEntries();
@@ -218,7 +218,7 @@ export async function importPackage(targetpath,y=false) {
         return;
     }
 
-    console.log(chalk.yellow(`Preparing install package ${metadata.name}...`));
+    console.log(chalk.gray(`Preparing install package ${metadata.name}...`));
     let overrideList = [];
     for (let script of metadata.scripts) {
         if (!script.name || !script.filename || !script.description || !script.md5) {
