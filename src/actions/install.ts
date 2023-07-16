@@ -412,26 +412,29 @@ async function determineSource(sources, verbose = false, spinner = null) {
         }
     }
     const fastest = {
-        source: "github",
+        source: await Settings.get('source', "github"),
         time:Infinity
     }
-    for (const sourceName in sources) {
-        const sourceUrl = getHostname(sources[sourceName]);
-        if(verbose)spinner.text(`Testing source ${sourceName}...`);
-        const result = await ping.promise.probe(sourceUrl, {
-            timeout: 2
-        });
-        if (result.alive&&_pingTimeIsValid(result.time)) {
-            if(verbose)spinner.log(`${sourceName} => ${result.time} ms`);
-            if(result.time < fastest.time){
-                fastest.source = sourceName;
-                fastest.time = result.time;
+    const autoCheck = await Settings.get('auto_select_source', true);
+    if (!!autoCheck) {
+        for (const sourceName in sources) {
+            const sourceUrl = getHostname(sources[sourceName]);
+            if (verbose) spinner.text(`Testing source ${sourceName}...`);
+            const result = await ping.promise.probe(sourceUrl, {
+                timeout: 2
+            });
+            if (result.alive && _pingTimeIsValid(result.time)) {
+                if (verbose) spinner.log(`${sourceName} => ${result.time} ms`);
+                if (result.time < fastest.time) {
+                    fastest.source = sourceName;
+                    fastest.time = result.time;
+                }
+            } else {
+                if (verbose) spinner.log(`Source ${sourceName} is not reachable.`);
             }
-        } else {
-            if(verbose)spinner.log(`Source ${sourceName} is not reachable.`);
         }
+        if(verbose)spinner.success(`Fastest source is ${fastest.source} with ${fastest.time}ms.`);
     }
-    if(verbose)spinner.success(`Fastest source is ${fastest.source} with ${fastest.time}ms.`);
     if (verbose) await new Promise(r => setTimeout(r, 10));
     return fastest.source;
 }

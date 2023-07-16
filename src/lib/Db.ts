@@ -114,6 +114,7 @@ export class Settings{
         await Settings.set('cfproxy', '', true);
         await Settings.set('proxy', '', true);
         await Settings.set('update_url', CONSTS.UPDATE_URL, true);
+        await Settings.set('auto_select_source', true, true);
     }
 }
 
