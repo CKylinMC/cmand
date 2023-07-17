@@ -52,7 +52,8 @@ export async function searchCloud(name, askdownload=false, download = false, out
     const reposource = list.reposource;
     const repo = list.repofile;
     const pkgs = list.pkgs;
-    if ('banner' in list) {
+    const disableBanner = await Settings.get('disable_banner', false);
+    if (!disableBanner && 'banner' in list) {
         log(`========================[BANNER]========================`)
         log(list.banner);
         log(`========================================================`)
