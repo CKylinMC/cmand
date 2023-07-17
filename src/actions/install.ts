@@ -96,7 +96,6 @@ export async function searchCloud(
             continue;
         }
         reposource = list.reposource;
-        let repo = list.repofile;
         const pkgs = list.pkgs;
         const disableBanner = await Settings.get('disable_banner', false);
         if (!disableBanner && 'banner' in list) {
@@ -104,7 +103,7 @@ export async function searchCloud(
             log(list.banner);
             log(`========================================================`);
         }
-        log(chalk.gray(`Searching ${name} in ${repo}...`));
+        log(chalk.gray(`Searching ${name} in ${userepo.name??userepo.tag}...`));
         pkg = pkgs.find((pkg) => pkg.name === name);
         if (!pkg) {
             continue;
