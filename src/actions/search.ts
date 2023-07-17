@@ -77,7 +77,7 @@ export async function searchRemote(searchText):Promise<any> {
     log(`\nRemote results matched your input:\n`);
     for (const result of results) {
         console.log(chalk.bold(chalk.cyan(result.name)));
-        for (const pkg of result.result) {
+        for (const pkg of result.results) {
             log(`\t${chalk.green(pkg.name)} (${pkg.fullname}) - ${pkg.description ?? 'No description'} (${pkg.author ?? ''}) - ${pkg.size}`);
         }
         console.log('');
