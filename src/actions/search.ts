@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import got from 'got/dist/source';
-import Db, { CONSTS, Settings } from "../lib/Db";
+import Db, { Settings } from "../lib/Db";
 import { Spinner } from '../lib/Spinner';
 import { proxyedUrl } from '../lib/utils';
 

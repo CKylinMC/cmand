@@ -37,7 +37,6 @@ export async function searchCloud(
     let pkg;
     let userepo;
     let repolist;
-    let repofile;
     let reposource;
     let cfproxy = await Settings.get('cfproxy', '');;
 
@@ -98,7 +97,6 @@ export async function searchCloud(
         }
         reposource = list.reposource;
         let repo = list.repofile;
-        repofile = repo;
         const pkgs = list.pkgs;
         const disableBanner = await Settings.get('disable_banner', false);
         if (!disableBanner && 'banner' in list) {
