@@ -70,6 +70,7 @@ class Db{
 
 export const CONSTS = {
     UPDATE_URL: 'https://api.github.com/repos/CKylinMC/cmand/releases',
+    RELEASE_URL: 'https://api.github.com/repos/CKylinMC/cmand/releases',
     REPO_LIST: [
         {
             tag: 'cmdpkg',
@@ -118,12 +119,13 @@ export class Settings{
         await Settings.set('ver', 3);
         await Settings.set('repos', CONSTS.REPO_LIST, true);
         await Settings.set('update_url', CONSTS.UPDATE_URL, true);
+        await Settings.set('release_url', CONSTS.RELEASE_URL, true);
         await Settings.set('cfproxy', '', true);
         await Settings.set('proxy', '', true);
-        await Settings.set('update_url', CONSTS.UPDATE_URL, true);
         await Settings.set('auto_select_source', true, true);
         await Settings.set('disable_banner', false, true);
         await Settings.set('allow_remote_install', true, true);
+        await Settings.set('stable_only', false, true);
     }
 }
 

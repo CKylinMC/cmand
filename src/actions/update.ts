@@ -16,16 +16,24 @@ export async function update(download = false) {
         return;
     }
     console.log(`Current version: v${Info.version}`);
-    let updateUrl = await Settings.get('update_url');
-    if (updateUrl != CONSTS.UPDATE_URL) {
-        console.log(chalk.yellow(`Using custom update url: ${updateUrl}`));
+    const stable_only = await Settings.get('stable_only', false);
+    let targetUrl;
+    if (stable_only) {
+        targetUrl = await Settings.get('release_url', CONSTS.RELEASE_URL);
+    } else {
+        targetUrl = await Settings.get('update_url', CONSTS.UPDATE_URL);
     }
     let cfproxy = await Settings.get('cfproxy', '');
-    updateUrl = proxyedUrl(cfproxy, updateUrl);
+    targetUrl = proxyedUrl(cfproxy, targetUrl);
     let spinner1 = new Spinner("Checking for update...").start();
-    got(updateUrl).json().then(
-        async (releases: any[]):Promise<any> => {
-            const latest = releases[0];
+    got(targetUrl).json().then(
+        async (releases: any[]): Promise<any> => {
+            let latest;
+            if (stable_only) {
+                latest = releases;
+            } else {
+                latest = releases[0];
+            }
             const latestVersion = latest.tag_name;
             const isBeta = latest.prerelease;
             const url = latest.html_url;

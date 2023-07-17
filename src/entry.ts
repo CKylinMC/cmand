@@ -208,8 +208,8 @@ export default async function App() {
         .action((path, options) => importPackage(path, options.yes));
 
     p.command('update')
-        .aliases(['upgrade'])
-        .option('-y, --yes', 'download update and install')
+        .aliases(['upgrade','up'])
+        .option('-y, --yes', 'download update and install without confirmation')
         .description('check for cmand updates')
         .action((options) => update(options.yes));
 
