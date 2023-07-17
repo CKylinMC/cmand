@@ -100,9 +100,7 @@ export async function update(download = false) {
                     move /y "${selfpath}" "${selfpath}.old"
                     move /y "${filepath}" "${selfpath}"
                     del /f /Q "${selfpath}.old"
-                    del /f /Q "${temp}"
-                    echo Done.
-                    exit /b
+                    del /f /Q "${temp}" && echo Done. && exit /b
                     `.split("\n").map(line=>line.trimStart()).join("\n"));
                     fs.writeFileSync(scriptBootPath, `
                     @cmd /c ${scriptPath.indexOf(" ")!=-1?`"${scriptPath}"`:`${scriptPath}`}
