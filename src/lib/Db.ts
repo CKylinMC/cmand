@@ -70,7 +70,7 @@ class Db{
 
 export const CONSTS = {
     UPDATE_URL: 'https://api.github.com/repos/CKylinMC/cmand/releases',
-    RELEASE_URL: 'https://api.github.com/repos/CKylinMC/cmand/releases',
+    RELEASE_URL: 'https://api.github.com/repos/CKylinMC/cmand/releases/latest',
     REPO_LIST: [
         {
             tag: 'cmdpkg',
