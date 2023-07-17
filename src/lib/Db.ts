@@ -70,7 +70,15 @@ class Db{
 
 export const CONSTS = {
     UPDATE_URL: 'https://api.github.com/repos/CKylinMC/cmand/releases',
-    REPO_LIST: 'https://fastly.jsdelivr.net/gh/ckylinmc/cmdpkg_repo/list.json',
+    REPO_LIST: [
+        {
+            tag: 'cmdpkg',
+            name: 'ckylinmc/cmdpkg_repo',
+            json: 'https://cdn.staticaly.com/gh/ckylinmc/cmdpkg_repo/main/list.json',
+            desc: 'CKylinMC\'s repo',
+            load: true
+        }
+    ],
 }
 
 // create instance for database only when call, so it will be created after init()
@@ -107,15 +115,15 @@ export class Settings{
         return new Promise((r,j)=>Settings.db.find({}, (err, docs) => err?j(err):r(docs)));
     }
     static async init() {
-        await Settings.set('ver', 2);
-        await Settings.set('repolist', CONSTS.REPO_LIST, true);
-        await Settings.set('allowRemoteInstall', true, true);
+        await Settings.set('ver', 3);
+        await Settings.set('repos', CONSTS.REPO_LIST, true);
         await Settings.set('update_url', CONSTS.UPDATE_URL, true);
         await Settings.set('cfproxy', '', true);
         await Settings.set('proxy', '', true);
         await Settings.set('update_url', CONSTS.UPDATE_URL, true);
         await Settings.set('auto_select_source', true, true);
         await Settings.set('disable_banner', false, true);
+        await Settings.set('allow_remote_install', true, true);
     }
 }
 

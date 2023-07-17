@@ -20,58 +20,67 @@ export async function search(searchText) {
 export async function searchRemote(searchText):Promise<any> {
     const allowedRepofileVerion = [1];
     const log = console.log;
-    if (!(await Settings.get('allowRemoteInstall', true))) {
+    if (!(await Settings.get('allow_remote_install', true))) {
         return;
     }
-    let listurl = await Settings.get('repolist', CONSTS.REPO_LIST);
-    if (listurl != CONSTS.REPO_LIST) {
-        log(chalk.yellow('Using custom repo list url: ' + listurl));
-    }
-    if(!listurl||listurl.length===0) {
-        log(chalk.red('No repo list url found.'));
+
+    let repos = await Settings.get('repos', []);
+    if (repos.length === 0) {
+        log(chalk.red('No repository found.'));
         return;
     }
-    let cfproxy = await Settings.get('cfproxy', '');
-    listurl = proxyedUrl(cfproxy, listurl);
+
+    const results = [
+        /*{
+            name: 'reponame',
+            results: []
+        }*/
+    ];
     const spinner = new Spinner("Searching on remote repostory...").start();
-    let list;
-    try {
-        list = await got(listurl).json();
-        spinner.replace();
-    } catch (e) {
-        log(chalk.red('Failed to get repo list.'));
-        return;
+
+    for (const repo of repos) {
+        if (!repo.load) continue;
+        let listurl = repo.json;
+        let cfproxy = await Settings.get('cfproxy', '');
+        listurl = proxyedUrl(cfproxy, listurl);
+        let list;
+        try {
+            list = await got(listurl).json();
+            spinner.replace();
+        } catch (e) {
+            log(chalk.red('Failed to get repo list.','repo =',repo.tag??repo.json??'?'));
+            continue;
+        }
+        if (!list) {
+            log(chalk.red('Repolist file is invalid.','repo =',repo.tag??repo.json??'?'));
+            continue;
+        }
+        if (!(('repofile' in list) && ('version' in list) && ('urlbase' in list) && ('reposource' in list) && ('pkgs' in list))) {
+            log(chalk.red('Repolist file is invalid.','repo =',repo.tag??repo.json??'?'));
+            continue;
+        }
+        if (!allowedRepofileVerion.includes(list.version)) {
+            log(chalk.red('Repolist file version is not supported.','repo =',repo.tag??repo.json??'?'));
+            continue;
+        }
+        const pkgs = list.pkgs;
+        const matches = pkgs.filter(pkg => pkg.name.indexOf(searchText)>-1);
+        if (!matches || matches.length === 0) {
+            // log(chalk.red(`Package ${searchText} not found in current repo.`));
+            continue;
+        }
+        results.push({
+            name: repo.name ?? repo.tag ?? repo.json ?? '?',
+            results: matches
+        });
     }
-    if (!list) {
-        log(chalk.red('Repolist file is invalid.'));
-        return;
-    }
-    if (!(('repofile' in list) && ('version' in list) && ('urlbase' in list) && ('reposource' in list) && ('pkgs' in list))) {
-        log(chalk.red('Repolist file is invalid.'));
-        return;
-    }
-    if (!allowedRepofileVerion.includes(list.version)) {
-        log(chalk.red('Repolist file version is not supported.'));
-        return [false,'',''];
-    }
-    // const urlbase = list.urlbase.endsWith('/') ? list.urlbase : list.urlbase + '/';
-    // const reposource = list.reposource;
-    // const repo = list.repofile;
-    const pkgs = list.pkgs;
-    // if ('banner' in list) {
-    //     log(`========================[BANNER]========================`)
-    //     log(list.banner);
-    //     log(`========================================================`)
-    // }
-    // log(chalk.gray(`Searching ${searchText} in ${repo}...`));
-    const matches = pkgs.filter(pkg => pkg.name.indexOf(searchText)>-1);
-    if (!matches || matches.length === 0) {
-        // log(chalk.red(`Package ${searchText} not found in current repo.`));
-        return;
-    }
-    log(`\nRemote results matched your input:`)
-    for (const pkg of matches) {
-        log(`  ${chalk.green(pkg.name)} (${pkg.fullname}) - ${pkg.description ?? 'No description'} (${pkg.author ?? ''}) - ${pkg.size}`);
+    log(`\nRemote results matched your input:\n`);
+    for (const result of results) {
+        console.log(chalk.bold(chalk.cyan(result.name)));
+        for (const pkg of result.result) {
+            log(`\t${chalk.green(pkg.name)} (${pkg.fullname}) - ${pkg.description ?? 'No description'} (${pkg.author ?? ''}) - ${pkg.size}`);
+        }
+        console.log('');
     }
     return;
 }
