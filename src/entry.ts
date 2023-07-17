@@ -22,6 +22,13 @@ import { update } from './actions/update';
 import { Info } from './info';
 import { Settings } from './lib/Db';
 import { exportEnv } from './actions/env';
+import {
+    disableRepo,
+    enableRepo,
+    importRepo,
+    listRepos,
+    removeRepo,
+} from './actions/repo';
 
 export default async function App() {
     await Settings.init();
@@ -260,6 +267,48 @@ export default async function App() {
         .aliases(['ls', 'dump'])
         .description('list all config values')
         .action(() => listConfig());
+
+    const repocmd = p
+        .command('repo')
+        .aliases(['remote', 'repos'])
+        .description('manage remote repositories');
+
+    repocmd
+        .command('list')
+        .aliases(['ls', 'dump'])
+        .description('list all repositories')
+        .action(() => listRepos());
+
+    repocmd
+        .command('remove')
+        .aliases(['del', 'delete', 'd', 'rm'])
+        .description('remove a repository')
+        .argument('<tag>', 'tag of repository')
+        .action((tag) => removeRepo(tag));
+
+    repocmd
+        .command('enable')
+        .aliases(['on'])
+        .description('enable a repository')
+        .argument('<tag>', 'tag of repository')
+        .action((tag) => enableRepo(tag));
+
+    repocmd
+        .command('disable')
+        .aliases(['off'])
+        .description('disable a repository')
+        .argument('<tag>', 'tag of repository')
+        .action((tag) => disableRepo(tag));
+
+    repocmd
+        .command('import')
+        .aliases(['download', 'add', 'a'])
+        .description('import a repository')
+        .argument(
+            '<source>',
+            'source of repository, maybe a url to intro json or just a baed64-encoded json data.'
+        )
+        .action((source) => importRepo(source));
 
     p.parse(process.argv);
 }

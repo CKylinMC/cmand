@@ -76,7 +76,7 @@ export async function addRepo(tagname, name, json, desc) {
     return;
 }
 
-async function importRepo(importData) {
+async function doImportRepo(importData) {
     if (!importData.tag || !importData.name || !importData.json || !importData.desc) {
         console.log(chalk.red(`Invalid import data. (Missing fields)`));
         return;
@@ -109,7 +109,7 @@ export async function importFromUrl(url) {
         console.log(chalk.red(`Failed to import from ${url}.`));
         return;
     }
-    return importRepo(importData);
+    return doImportRepo(importData);
 }
 
 export async function importFromB64(b64) {
@@ -120,9 +120,16 @@ export async function importFromB64(b64) {
         console.log(chalk.red(`Failed to import from base64.`));
         return;
     }
-    return importRepo(importData);
+    return doImportRepo(importData);
 }
 
+export async function importRepo(txt) {
+    if (txt.startsWith('http')) {
+        return importFromUrl(txt);
+    } else {
+        return importFromB64(txt);
+    }
+}
 
 export async function deleteRepo(tag) {
     const repos = await Settings.get('repos', []);
