@@ -8,7 +8,7 @@ import { exec as sudo } from 'sudo-prompt';
 import Db, { Script } from '../lib/Db';
 
 export async function run(name, args, forceAdmin = false) {
-    
+
     if (await runLocalScripts(name, args, null, false)) {
         return;// run local script
     }
@@ -76,11 +76,19 @@ export async function executeAsAdmin(script: Script, args) {
     const { path } = script;
     const cmd = `${path} ${args.join(' ')}`;
     const starttime = new Date().getTime();
+    let envArr = Object.keys(process.env).map(key => {
+        if (/^[a-zA-Z0-9_]+$/gm.test(key)) return {k:key,v:process.env[key]};
+        else return null;
+    }).filter(it => !!it);
+    let env: { [key: string]: string } = {};
+    envArr.forEach(it => {
+        env[it.k] = it.v;
+    });
     return new Promise(r => {
         sudo(cmd, {
             name: "CMAND Script Manager",
             env: {
-                ...process.env,
+                ...env,
                 "EXECUTOR": "CMAND"
             }
         }, function (error, stdout, stderr) {
