@@ -126,6 +126,8 @@ export class Settings{
         await Settings.set('disable_banner', false, true);
         await Settings.set('allow_remote_install', true, true);
         await Settings.set('stable_only', false, true);
+        await Settings.set('replace_update_dl_host', '', true);
+        await Settings.set('static_update_dl_url', '', true);
     }
 }
 

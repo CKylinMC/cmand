@@ -9,6 +9,10 @@ import { execute } from './run';
 import got from 'got';
 import { Spinner } from '../lib/Spinner';
 import { CONSTS, Settings } from '../lib/Db';
+import markdownToTxt from 'markdown-to-txt';
+
+import semver from 'semver';
+import { ProgressBar } from '../lib/ProgressBar';
 
 export async function update(download = false) {
     if (!('pkg' in process)) {
@@ -35,22 +39,42 @@ export async function update(download = false) {
                 latest = releases[0];
             }
             const latestVersion = latest.tag_name;
-            const isBeta = latest.prerelease;
+            const isBeta = latest.prerelease??false;
             const url = latest.html_url;
             const asset = latest.assets.find((asset) => asset.name === 'cmand.exe');
             let exe = asset?.browser_download_url;
+            const replaceHost = await Settings.get('replace_update_dl_host', ''); // mirror site
+            const staticURL = await Settings.get('replace_update_dl_url', ''); // github action auto push
+            if (replaceHost&&exe) {
+                let exeurl = new URL(exe);
+                exeurl.host = replaceHost;
+                exe = exeurl.toString();
+                console.log(chalk.gray(`Using download host: ${replaceHost}`));
+            } else if (staticURL && exe) {
+                exe = staticURL;
+            }
             const size = asset?.size;
-            if (latestVersion != 'v' + Info.version) {
-                spinner1.success(chalk.yellow(`New version ${latestVersion}${isBeta?" (Beta)":""} found.`),"");
+            if(semver.gt(latestVersion, Info.version)) {
+            // if ( latestVersion != 'v' + Info.version) {
+                spinner1.success(chalk.yellow(`New version ${latestVersion}${isBeta ? " (Beta)" : ""} found.`), "");
+                const fullUpdateLog = markdownToTxt(latest.body??'');
+                if (fullUpdateLog.split('\n').length <= 15) {
+                    console.log("\n"+"=".repeat(24),"\n * Update note:\n");
+                    console.log(fullUpdateLog);
+                    console.log("\n"+"=".repeat(24),"\n")
+                }
                 console.log(chalk.yellow(`Check out more information at ${url}`));
-                if (!exe) return Promise.resolve(0);
+                if (!exe) {
+                    console.log(chalk.gray('This version does not have a vaild update package. You may need to update manually.'));
+                    return Promise.resolve(0);
+                }
                 console.log(chalk.gray(`Download size: ${Math.round(size/1024/10.24)/100+" MB"}`))
                 if (!download) {
                     const { download } = await inquirer.prompt([
                         {
                             type: 'confirm',
                             name: 'download',
-                            message: 'Download now?',
+                            message: 'Download and update now?',
                             default: true,
                         },
                     ]);
@@ -61,13 +85,22 @@ export async function update(download = false) {
                 try {
                     exceptSync(() => fs.mkdirSync(temp));
                     const filepath = path.join(temp, "cmand.update.exe");
-                    
+
                     await new Promise((r, j) => {
                         exe = proxyedUrl(cfproxy, exe);
-                        const stream = got.stream(exe);
+                        const stream = got.stream(exe,{https: { rejectUnauthorized: false }});
                         let lastdata = 0;
                         let lastTime = Date.now();
                         let speed = 0;
+                        const fixNum = num => {
+                            const str = num.toString();
+                            const dot = str.indexOf('.');
+                            if (dot === -1) return str + '.00';
+                            const decimal = str.substr(dot + 1);
+                            if (decimal.length === 2) return str;
+                            if (decimal.length === 1) return str + '0';
+                            return str.substr(0, dot + 3);
+                        }
                         stream.on("downloadProgress", ({ transferred, total, percent }) => {
                             const now = Date.now();
                             const diff = transferred - lastdata;
@@ -80,8 +113,9 @@ export async function update(download = false) {
                             const percentage = isNaN(total)?"?":Math.round(percent * 100);
                             const transferredMB = isNaN(total)?"?":Math.round(transferred / 1024 / 10.24) / 100;
                             const totalMB = isNaN(total) ? "?" : Math.round(total / 1024 / 10.24) / 100;
-                            const speedTxt = speed!=0?(` - ${speedKB} KB/s`):'';
-                            spinner2.text(`Downloading... ${transferredMB} MB / ${totalMB} MB (${percentage}%)${speedTxt}`);
+                            const speedTxt = speed != 0 ? (` - ${speedKB} KB/s`) : '';
+
+                            spinner2.text(`Downloading... ${ProgressBar.render({ max: total, value: transferred })} ${fixNum(transferredMB)} MB / ${totalMB} MB (${percentage}%)${speedTxt}`);
                         })
                         stream.on('error', j);
                         const writer = fs.createWriteStream(filepath);
@@ -99,8 +133,8 @@ export async function update(download = false) {
                     taskkill /f /im cmand.exe
                     move /y "${selfpath}" "${selfpath}.old"
                     move /y "${filepath}" "${selfpath}"
-                    del /f /Q "${selfpath}.old"
-                    del /f /Q "${temp}" && echo Done. && exit /b
+                    echo Update complete. Cleaning up...
+                    del /f /Q "${selfpath}.old" && del /f /Q "${temp}" && echo Done. && exit /b
                     `.split("\n").map(line=>line.trimStart()).join("\n"));
                     fs.writeFileSync(scriptBootPath, `
                     @cmd /c ${scriptPath.indexOf(" ")!=-1?`"${scriptPath}"`:`${scriptPath}`}
@@ -115,14 +149,19 @@ export async function update(download = false) {
                         enabled: true,
                     }, []);
                 } catch (e) {
-                    spinner2.fail(chalk.red('Error while updating:')+e,'');
+                    spinner2.fail(chalk.red('Error while updating: ')+e,'');
                     return Promise.resolve(0);
                 } finally {
+                    console.log("Cleaning up...");
                     exceptSync(()=>fs.unlinkSync(temp));
+                    exceptSync(()=>fs.unlinkSync(`${process.execPath}.old`));
                 }
                 return Promise.resolve(0);
+            } else if (semver.lt(latestVersion, Info.version)) {
+                spinner1.success(chalk.cyan("You are using a future version of 'cmand'."),"");
+                return Promise.resolve(0);
             } else {
-                spinner1.success(chalk.green('cmand is up to date.'),"");
+                spinner1.success(chalk.green("You are using the latest version of 'cmand'."),"");
                 return Promise.resolve(0);
             }
         }
