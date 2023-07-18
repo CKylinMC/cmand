@@ -95,6 +95,8 @@ export async function searchCloud(
             );
             continue;
         }
+        userepo = repoinfo;
+        repolist = list;
         reposource = list.reposource;
         const pkgs = list.pkgs;
         const disableBanner = await Settings.get('disable_banner', false);
@@ -108,8 +110,6 @@ export async function searchCloud(
         if (!pkg) {
             continue;
         }
-        userepo = repoinfo;
-        repolist = list;
     }
     if (!pkg) {
         log(chalk.red(`Package ${name} not found.`));
