@@ -11,7 +11,7 @@ export async function info(name) {
     //check if existed
     const script = await Db.getScriptByName(name);
     if (!script) {
-        console.log();
+        console.log(chalk.red(`Script ${name} not found.`));
         return;
     }
     // check file of the script path is still valid
