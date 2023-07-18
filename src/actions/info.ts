@@ -42,13 +42,13 @@ export async function info(name) {
 
 export async function coreInfo() {
     const dump = (key, value) => console.log(chalk.blue(key), "=>", chalk.green(JSON.stringify(value, null, 2)));
-    dump("[Inner] CMAND INFO",Info);
+    dump("[Internal] CMAND INFO",Info);
     dump("CMAND_HOME", process.env.CMAND_HOME);
-    dump("[Inner] CMAND_HOME", home);
+    dump("[Internal] CMAND_HOME", home);
     dump("CMAND_SCRIPTS", process.env.CMAND_SCRIPTS);
-    dump("[Inner] CMAND_SCRIPTS", scripthome());
-    dump("[Inner] database", dbpath());
-    dump("[Inner] settings", settingspath());
+    dump("[Internal] CMAND_SCRIPTS", scripthome());
+    dump("[Internal] database", dbpath());
+    dump("[Internal] settings", settingspath());
     console.log("\nFor configuration details please use 'cmand config list' command.");
     console.log("If you want to query informations of a script, please use 'cmand info <SCRIPT_NAME>'.");
     console.log("Use 'cmand [SUB_COMMAND] help [SECTION]' to check help documents.");
