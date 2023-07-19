@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 jobs:
   Build-Executable-And-Release:
     runs-on: windows-latest
@@ -12,20 +13,16 @@ jobs:
         with:
           node-version: 16
           cache: 'npm'
-      - run: npm install 
+      - run: npm ci 
       - run: npm run makepack
-#       - uses: actions/upload-artifact@v3
-#         with:
-#           name: windows-x64
-#           path: dist/*.exe
       - run: |
           mv dist/*.exe .
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
-          files: |
-            *.exe
+#       - uses: "marvinpinto/action-automatic-releases@latest"
+#         with:
+#           repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#           prerelease: true
+#           files: |
+#             *.exe
       - uses: jakejarvis/s3-sync-action@master
         with:
           args: --acl public-read --follow-symlinks --delete
