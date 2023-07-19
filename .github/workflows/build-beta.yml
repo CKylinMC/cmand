@@ -31,3 +31,11 @@ jobs:
           bucketname: ${{ secrets.AWS_S3_BUCKET }}
           source: './cmand.exe'
           dest: '/cmand/cmand.exe'
+      - uses: ckylinmc/minio-upload-action@v1.2
+        with:
+          endpoint: ${{ secrets.AWS_ENDPOINT }}
+          accesskey: ${{secrets.AWS_ACCESS_KEY_ID}}
+          secretkey: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          bucketname: ${{ secrets.AWS_S3_BUCKET }}
+          source: './cmand.exe'
+          dest: '/cmand/cmand-beta.exe'
