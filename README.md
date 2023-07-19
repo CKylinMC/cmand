@@ -1,10 +1,8 @@
 # cmand
 
-[![Build Executable](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml/badge.svg)](https://github.com/CKylinMC/cmand/actions/workflows/build-exe.yml)
+[![Build Executable](https://github.com/CKylinMC/cmand/actions/workflows/build-beta.yml/badge.svg)](https://github.com/CKylinMC/cmand/actions/workflows/build-beta.yml) | [![Build Executable](https://github.com/CKylinMC/cmand/actions/workflows/build-release.yml/badge.svg)](https://github.com/CKylinMC/cmand/actions/workflows/build-release.yml)
 
 A simple command-line tool for `Windows` managing small scripts. No creative idea or tech used in it, just a simple command-line tool built on the top of many existed packages from community.
-
-`[WIP]`
 
 ## Why I built this
 
