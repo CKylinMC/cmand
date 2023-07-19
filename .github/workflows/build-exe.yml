@@ -23,16 +23,14 @@ jobs:
 #           prerelease: true
 #           files: |
 #             *.exe
-      - uses: hkusu/s3-upload-action@v2
+      - uses: ckylinmc/minio-upload-action@v1.2
         with:
-          #args: --acl public-read --follow-symlinks --delete
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us6'
-          aws-bucket: ${{ secrets.AWS_S3_BUCKET }}
-          file-path: 'cmand.exe'
-          bucket-root: '/'
-          destination-dir: '/cmand/'
+          endpoint: ${{ secrets.AWS_ENDPOINT }}
+          accesskey: ${{secrets.AWS_ACCESS_KEY_ID}}
+          secretkey: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          bucketname: ${{ secrets.AWS_S3_BUCKET }}
+          source: './cmand.exe'
+          dest: '/cmand/cmand.exe'
 #         env:
 #           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
 #           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
