@@ -30,7 +30,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us6'
           aws-bucket: ${{ secrets.AWS_S3_BUCKET }}
-          file-path: '.\\dist\\cmand.exe'
+          file-path: 'cmand.exe'
           bucket-root: '/'
           destination-dir: '/cmand/'
 #         env:
