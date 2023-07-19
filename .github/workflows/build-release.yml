@@ -1,0 +1,33 @@
+name: Build And Release (Release)
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+jobs:
+  Build-Executable-And-Release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+      - run: npm ci 
+      - run: npm run makepack
+      - run: |
+          mv dist/*.exe .
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            *.exe
+      - uses: ckylinmc/minio-upload-action@v1.2
+        with:
+          endpoint: ${{ secrets.AWS_ENDPOINT }}
+          accesskey: ${{secrets.AWS_ACCESS_KEY_ID}}
+          secretkey: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          bucketname: ${{ secrets.AWS_S3_BUCKET }}
+          source: './cmand.exe'
+          dest: '/cmand/cmand.exe'
