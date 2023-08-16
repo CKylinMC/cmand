@@ -2,7 +2,7 @@ name: Build And Release (Beta)
 on:
   push:
     tags:
-      - "v.*-beta"
+      - "*"
   workflow_dispatch:
 jobs:
   Build-Executable-And-Release:
