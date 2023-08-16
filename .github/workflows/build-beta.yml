@@ -3,7 +3,6 @@ on:
   push:
     tags:
       - "*"
-  workflow_dispatch:
 jobs:
   Build-Executable-And-Release:
     runs-on: windows-latest
