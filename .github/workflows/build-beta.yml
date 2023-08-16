@@ -2,7 +2,7 @@ name: Build And Release (Beta)
 on:
   push:
     tags:
-      - "v*-beta"
+      - "v.*-beta"
   workflow_dispatch:
 jobs:
   Build-Executable-And-Release:
@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 16
           cache: 'npm'
-      - run: npm ci 
+      - run: npm ci
       - run: npm run makepack
       - run: |
           mv dist/*.exe .
