@@ -50,6 +50,7 @@
     "homedir": "^0.6.0",
     "i": "^0.3.7",
     "inquirer": "^8.2.5",
+    "inquirer-search-list": "^1.2.6",
     "markdown-to-txt": "^2.0.1",
     "md5-file": "^5.0.0",
     "nestdb": "github:CKylinMC/nestdb",

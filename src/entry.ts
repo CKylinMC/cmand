@@ -197,8 +197,9 @@ export default async function App() {
     p.command('export')
         .aliases(['makepkg'])
         .description('convert a script into cmdpkg')
-        .argument('<name>', 'name of the script')
-        .action((name) => exportPackage(name));
+        .option('-i, --noui', 'skip all interactive prompts (for cli calling)')
+        .argument('[name]', 'name of the script (left blank for selecting)')
+        .action((name,options) => exportPackage(name, options.noui));
 
     p.command('import')
         .aliases(['install'])
