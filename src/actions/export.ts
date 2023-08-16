@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import Db from '../lib/Db';
+import Db, { Settings } from '../lib/Db';
 import AdmZip from 'adm-zip';
 import md5File from 'md5-file';
 
@@ -37,11 +37,13 @@ export async function exportPackage(name) {
     const ext = path.extname(script.path);
     console.log(`Type: ${ext.substring(1)}`);
 
+    let author = Settings.get('export_username',process.env.USERNAME)||process.env.USERNAME;
+
     const metadata = {
         cmandpkgver: 1,
         name: script.name,
         description: script.description,
-        author: process.env.USERNAME,
+        author,
         modified: new Date(stat.mtime).toLocaleString(),
         size: stat.size,
         type: ext.substring(1),

@@ -128,6 +128,7 @@ export class Settings{
         await Settings.set('stable_only', false, true);
         await Settings.set('replace_update_dl_host', '', true);
         await Settings.set('static_update_dl_url', '', true);
+        await Settings.set('export_username', process.env['USERNAME']??'', true);
     }
 }
 
