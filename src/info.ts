@@ -3,7 +3,7 @@ import homedir from 'homedir';
 
 export const Info = {
     name: 'cmand',
-    version: '0.7.7',
+    version: '0.7.8',
     description: 'A command line tool for managing your script snippets on Windows.',
     author: 'CKylinMC',
 }
