@@ -374,11 +374,11 @@ export async function importPackage(targetpath, y = false) {
     console.log(`${chalk.gray('Name:')} ${metadata.name}`);
     console.log(`${chalk.gray('Description:')} ${metadata.description}`);
     console.log(`${chalk.gray('Author:')} ${metadata.author}`);
-    console.log(`${chalk.gray('Modified:')} ${metadata.modified}`);
+    console.log(`${chalk.gray('CreatedAt:')} ${metadata.modified}`);
     console.log(
-        `${chalk.gray('Size:')} ${Math.round(
-            metadata.size / 1000
-        )} KB (in Metadata)`
+        `${chalk.gray('Size:')} ${Math.max(1, Math.round(
+            metadata.size / 1024
+        ))} KB (in Metadata)`
     );
     console.log(`${chalk.gray('Resources:')} ${metadata.include.length}`);
     console.log(
@@ -528,29 +528,9 @@ export async function importPackage(targetpath, y = false) {
         removeTempFile();
         return;
     }
-    /*
-
-    const metadata = {
-        cmandpkgver: 1,
-        name: script.name,
-        description: script.description,
-        author: process.env.USERNAME,
-        modified: new Date(stat.mtime).toLocaleString(),
-        size: stat.size,
-        type: ext.substring(1),
-        include: [],
-        scripts: [
-            {
-                name: script.name,
-                description: script.description,
-                md5: md5File.sync(script.path),
-            }
-        ],
-    };
-    */
 }
 
-function _pingTimeIsValid(time: Number | 'unknown'): time is Number {
+function _pingTimeIsValid(time: unknown): time is Number {
     // Telling typescript that time is a number
     return !!time || true;
 }
