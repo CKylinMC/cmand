@@ -10,6 +10,7 @@ export const Info = {
 const userhome = homedir();
 export let home = path.join(userhome, '.cmand');
 export let scripthome = () => path.join(home, 'scripts');
+export let includeshome = () => path.join(scripthome(), 'include');
 export const dbpath = () => path.join(home, 'data.db');
 export const settingspath = () => path.join(home, 'settings.db');
 export const setHome = (p) => home = p;

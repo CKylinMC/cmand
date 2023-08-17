@@ -6,6 +6,7 @@ import AdmZip from 'adm-zip';
 import md5File from 'md5-file';
 import inquirer from 'inquirer';
 import SearchList from 'inquirer-search-list';
+import { includeshome } from '../info';
 
 export async function exportPackage(name, noui=false) {
     inquirer.registerPrompt('search-list', SearchList);
@@ -48,8 +49,9 @@ export async function exportPackage(name, noui=false) {
     let banner = '';
     let postinstall = '';
     let loop = true;
+    let includesPath = includeshome();
     if(!noui) while (loop) {
-        let answers = await inquirer.prompt({
+        const answers = await inquirer.prompt({
             type: 'list',
             name: 'opt',
             message: 'Select operation:',
@@ -75,7 +77,7 @@ export async function exportPackage(name, noui=false) {
                 {
                     name: `Select included resources: ${includes.length} selected`,
                     value: 'select-includes',
-                    disabled: 'Not available yet (will support this feature in future version)',
+                    // disabled: 'Not available yet (will support this feature in future version)',
                 },
                 {
                     name: `Set before install banner: ${
@@ -179,6 +181,29 @@ export async function exportPackage(name, noui=false) {
                     }
                 }
                 break;
+            case 'select-includes':
+                {
+                    if (!fs.existsSync(includesPath)) {
+                        console.log(chalk.redBright("Directory 'include' under scripts home is not existed yet. Create it first and put all resources you need into it."));
+                        console.log(chalk.redBright("Note: Scripts home should be setted as environment variable '%CMAND_SCRIPTS%', or '%CMAND_HOME%\scripts'."));
+                        console.log(chalk.redBright("      If none of them setted, use '%USERPROFILE%\.cmand\scripts' instead. And include folder just under scripts folder."));
+                        break;
+                    }
+                    let dirlist = fs.readdirSync(includesPath, { encoding: 'utf8', withFileTypes: true });
+                    // console.log(dirlist);
+                    console.log(chalk.blueBright('Only file is acceptable. If you want to include folder, Make it a zip file and use "postinstall" script to unzip it.'));
+                    let results = await inquirer.prompt({
+                        type: 'checkbox',
+                        name: 'selectfiles',
+                        message: 'Select file(s) you want to include.',
+                        choices: dirlist.filter(file => file.isFile()).map(file => ({ name: file.name, value: file }))
+                    });
+                    // console.log(results);
+                    includes = results.selectfiles;
+                }
+                break;
+            default:
+                console.log(chalk.red('Unknown or unsupported operation'));
         }
     }
 
@@ -208,6 +233,7 @@ export async function exportPackage(name, noui=false) {
         process.exit(0);
     }
 
+    console.log(chalk.gray('Generating metadata...'));
     const metadata = {
         cmandpkgver: 1,
         name: script.name,
@@ -217,7 +243,10 @@ export async function exportPackage(name, noui=false) {
         modified: new Date(stat.mtime).toLocaleString(),
         size: stat.size,
         type: ext.substring(1),
-        include: includes,
+        include: includes.map(i => ({
+            path: i.name,
+            md5: md5File.sync(path.join(includesPath, i.name)),
+        })),
         scripts: [
             {
                 name: script.name,
@@ -231,14 +260,22 @@ export async function exportPackage(name, noui=false) {
         postInstallScript: postinstall,
     };
 
+    console.log(chalk.gray('Creating package...'));
     const filename = `${script.name}.cmdpkg`;
     const zip = new AdmZip();
+    console.log(chalk.gray('Adding metadata into package...'));
     zip.addFile(
         'metadata.json',
         Buffer.from(JSON.stringify(metadata), 'utf8'),
         'CMAND METADATA'
     );
-    zip.addLocalFile(script.path, 'scripts', path.basename(script.path));
+    console.log(chalk.gray(`Adding script "${script.name}" into package...`));
+    zip.addLocalFile(script.path, 'scripts', path.basename(script.path), 'CMAND SCRIPTS FOLDER');
+    for (const include of includes) {
+        console.log(chalk.gray(`Adding resource file "${include.name}" into package...`));
+        zip.addLocalFile(path.join(includesPath, include.name), 'include', include.name, 'CMAND RESOURCES FOLDER');
+    }
+    console.log(chalk.gray(`Writing package into disk...`));
     zip.writeZip(`./${filename}`);
     console.log(`Package ${filename} created.`);
 }
