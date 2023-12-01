@@ -18,9 +18,9 @@
   ],
   "scripts": {
     "premakepack": "npm run build",
-    "makepack": "pkg build\\main\\index.js -t node18-win-x86_64 -o dist\\cmand.exe",
+    "makepack": "pkg build/main/index.js -t node18-win-x86_64 -o dist/cmand.exe",
     "build": "tsc -p tsconfig.json",
-    "dev": "node build\\main\\index.js",
+    "dev": "node build/main/index.js",
     "predev": "npm run build"
   },
   "pkg": {
