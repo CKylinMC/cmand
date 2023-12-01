@@ -3,8 +3,13 @@ import path from 'path';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import yaml from 'yaml';
-import { scripthome } from '../info';
-import Db from '../lib/Db';
+import { includeshome, scripthome } from '../info';
+import Db, { Settings } from '../lib/Db';
+import got from 'got';
+import { Spinner } from '../lib/Spinner';
+import { ProgressBar } from '../lib/ProgressBar';
+import AdmZip from 'adm-zip';
+import { exec } from 'child_process';
 
 export async function create(name = null) {
     const questions = [
@@ -100,9 +105,94 @@ export async function createTask(taskname, contents) {
     console.log(chalk.green('Task added into cmand.yml, run "cmand task ' + taskname + '" to run it.'));
 }
 
+export async function makeShim(executable: string, alias = null) {
+    if(!await Settings.get('supress-shim-notice', false)) console.log(chalk.blue('[NOTICE] You are making shim for an executable via "aloneguid/win-shim". CMAND will not manage shims, only provide creation feature via subcommand. (Supress this notice by "cmand cfg set supress-shim-notice true")'));
+    const utilshome = path.join(includeshome(), "cmand-utils");
+    const shim = path.join(utilshome, "shmake.exe");
+    if (!fs.existsSync(shim)) {
+        if (!fs.existsSync(utilshome)) {
+            fs.mkdirSync(utilshome);
+        }
+        const shimpack = path.join(utilshome, "shmake.zip");
+        console.log(chalk.yellow('It seems this is the first time you run this command. CMAND will download the necessary files automatically. Please wait.'));
+        let spinner = new Spinner("Checking latest version of win-shim...").start();
+        let result;
+        try {
+            result = await got("https://api.github.com/repos/aloneguid/win-shim/releases/latest").json();
+        } catch (err) {
+            spinner.fail(chalk.red("Failed to fetch the latest version of win-shim: ", err.message));
+            return;
+        }
+        let versionTag = result.tag_name;
+        let downloadUrl = `https://github.com/aloneguid/win-shim/releases/download/${versionTag}/shmake.zip`;
+        let dlok = true;
+        await new Promise((resolve, reject) => {
+            const stream = got.stream(downloadUrl, { https: { rejectUnauthorized: false } });
+            stream.on('downloadProgress', ({ transferred, total, percent }) => {
+                spinner.text(`Downloading shmake.zip... ${ProgressBar.render({ max: total, value: transferred })} (${percent}%)`);
+            })
+            stream.on('error', reject);
+            const writer = fs.createWriteStream(shimpack);
+            writer.on('error', reject);
+            writer.on('finish', resolve);
+            stream.pipe(writer);
+        }).catch(() => {
+            dlok = false;
+        });
+        if (!dlok) {
+            spinner.fail(chalk.red("Failed to download shmake.zip."));
+            return;
+        }
+        spinner.text("Extracting shmake...");
+        const zip = new AdmZip(shimpack);
+        const zipEntries = zip.getEntries();
+        const fileList = {};
+        for (const entry of zipEntries) {
+            fileList[entry.entryName] = entry;
+        }
+        if (!fileList['shmake.exe']) {
+            spinner.fail(chalk.red("Failed to extract shmake"));
+            return;
+        }
+        try {
+            zip.extractEntryTo(fileList['shmake.exe'], utilshome);
+        } catch (err) {
+            spinner.fail(chalk.red("Failed to extract shmake: ") + err.message);
+            return;
+        }
+        try {
+            fs.unlinkSync(shimpack);
+        } catch (err) {
+            spinner.fail(chalk.red("Failed to remove shmake archive which is useless now: ") + err.message);
+            return;
+        }
+        spinner.success(chalk.green("shmake.exe has been downloaded successfully."));
+    }
+    let spinner = new Spinner("Creating shim...").start();
+    let execname = path.basename(executable, path.extname(executable));
+    let targetname = `${alias ?? execname}.exe`;
+    let output = path.join(scripthome(), targetname);
+    try {
+        if (fs.existsSync(output)) {
+            spinner.fail(chalk.red(`Failed to create ${targetname}: file already exists.`));
+            return;
+        }
+        let command = [`"${shim}"`, "-a", "%s", "-i", `"${executable}"`, "-o", `"${output}"`];
+        await new Promise((r, j) => {
+            exec(command.join(" "), (error) => {
+                if (error) j(error);
+                else r(0);
+            })
+        })
+        spinner.success(chalk.green(`Shim created successfully: ${targetname}`));
+    } catch (err) {
+        spinner.fail(chalk.red(`Failed to create ${targetname}: `,err));
+    }
+}
+
 export async function makeProxyScript(filename, alias=null, runner=null) {
     const sourcepath = path.resolve(process.cwd(), filename);
-    
+
     if (!fs.existsSync(sourcepath)) {
         console.log(chalk.red(`Path ${sourcepath} not found.`));
         return;

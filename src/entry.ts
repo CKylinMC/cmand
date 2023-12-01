@@ -8,7 +8,7 @@ import {
     removeConfig,
     setConfig,
 } from './actions/config';
-import { create, createTask, makeProxyScript } from './actions/create';
+import { create, createTask, makeProxyScript, makeShim } from './actions/create';
 import { edit } from './actions/edit';
 import { exportPackage } from './actions/export';
 import { info } from './actions/info';
@@ -94,7 +94,15 @@ export default async function App() {
                 options.name?.trim?.() || null,
                 options.runner?.trim?.() || null
             )
-        );
+    );
+
+    p.command('shim')
+        .argument(
+            '<executable>', 'path to the executable you want to make shim'
+        )
+        .option('-n, --name <name>', 'Specify an alias for the new shim file without extension', null)
+        .description('Create a shim for the specified executable via aloneguid/win-shim. Need download win-shim on first run.')
+        .action((path, { name }) => makeShim(path, name?.trim() || null));
 
     p.command('alias')
         .argument(
